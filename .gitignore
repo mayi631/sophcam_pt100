@@ -5,7 +5,6 @@
 .config.old
 .vscode
 __pycache__
-applications/dashcam/ui/aicamera
 applications/tools/bmp2bitmap/bmp2bitmap
 common_files
 components/AIsdk
@@ -52,3 +51,6 @@ scripts/kconfig/*.o
 /.codex/
 /.kilo/
 /syslog/
+
+!applications/dashcam/ui/aicamera/dc309/third_party/freetype/lib/
+!applications/dashcam/ui/aicamera/dc309/third_party/wpa/lib/

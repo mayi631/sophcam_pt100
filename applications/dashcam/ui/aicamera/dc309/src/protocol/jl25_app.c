@@ -1,0 +1,1582 @@
+/*
+ * Old APP JSON compatibility for the app endpoints.
+ *
+ * The phone APP does not only use JL25 paths or legacy Config.cgi. It also
+ * uses a JSON API under /app/, especially for playback and downloads.
+ * This adapter keeps those endpoints available in the self-contained HTTP
+ * server so the APP can browse files and fetch media directly.
+ */
+#define DEBUG
+#include <ctype.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/statvfs.h>
+#include <time.h>
+#include <unistd.h>
+
+#include "custom.h"
+#include "hal_wifi.h"
+#include "jl25_internal.h"
+#include "mlog.h"
+#include "mode.h"
+#include "param.h"
+
+#define JL25_APP_VERSION "CVITEK20210901"
+#define JL25_APP_MAX_FILES 512
+#define JL25_APP_PHOTO_DIR "/mnt/sd/DCIM/PHOTO"
+#define JL25_APP_MOVIE_DIR "/mnt/sd/DCIM/MOVIE"
+#define JL25_APP_RESET_STACK_SIZE (2 * 1024 * 1024)
+
+/* State used by /app/getrecduration.  Keep these declarations before the
+ * endpoint implementation because the endpoint appears before the settings
+ * helper section where the start/stop functions are defined. */
+static pthread_mutex_t s_jl25_app_duration_mutex = PTHREAD_MUTEX_INITIALIZER;
+static struct timespec s_jl25_app_record_start;
+static int s_jl25_app_record_start_valid;
+
+typedef struct {
+    char name[128];
+    char url[256];
+    int type;
+    unsigned int size_kb;
+    time_t create_time;
+} jl25_app_file_t;
+
+static int jl25_app_caseeq(const char* a, const char* b)
+{
+    while (*a != '\0' && *b != '\0') {
+        if (tolower((unsigned char)*a) != tolower((unsigned char)*b)) {
+            return 0;
+        }
+        a++;
+        b++;
+    }
+    return *a == '\0' && *b == '\0';
+}
+
+static int jl25_app_hex(char c)
+{
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    }
+    if (c >= 'a' && c <= 'f') {
+        return c - 'a' + 10;
+    }
+    if (c >= 'A' && c <= 'F') {
+        return c - 'A' + 10;
+    }
+    return -1;
+}
+
+static void jl25_app_url_decode(const char* src, size_t src_len,
+    char* dst, size_t dst_sz)
+{
+    size_t i;
+    size_t out = 0;
+
+    if (dst_sz == 0) {
+        return;
+    }
+    for (i = 0; i < src_len && out + 1 < dst_sz; i++) {
+        if (src[i] == '%' && i + 2 < src_len) {
+            int hi = jl25_app_hex(src[i + 1]);
+            int lo = jl25_app_hex(src[i + 2]);
+            if (hi >= 0 && lo >= 0) {
+                dst[out++] = (char)((hi << 4) | lo);
+                i += 2;
+                continue;
+            }
+        }
+        dst[out++] = (src[i] == '+') ? ' ' : src[i];
+    }
+    dst[out] = '\0';
+}
+
+static const char* jl25_app_query_get(const char* query, const char* name,
+    char* value, size_t value_sz)
+{
+    const char* p = query;
+    size_t name_len = strlen(name);
+
+    while (*p != '\0') {
+        const char* item_end = strchr(p, '&');
+        const char* eq = memchr(p, '=', item_end != NULL ? (size_t)(item_end - p) : strlen(p));
+        if (eq != NULL && (size_t)(eq - p) == name_len && strncmp(p, name, name_len) == 0) {
+            const char* value_start = eq + 1;
+            size_t value_len = item_end != NULL ? (size_t)(item_end - value_start) : strlen(value_start);
+            jl25_app_url_decode(value_start, value_len, value, value_sz);
+            return value;
+        }
+        if (item_end == NULL) {
+            break;
+        }
+        p = item_end + 1;
+    }
+    return NULL;
+}
+
+static void jl25_app_json_escape(const char* in, char* out, size_t out_sz)
+{
+    size_t o = 0;
+    size_t i;
+
+    for (i = 0; in[i] != '\0' && o + 2 < out_sz; i++) {
+        char c = in[i];
+        if (c == '"' || c == '\\') {
+            out[o++] = '\\';
+        }
+        out[o++] = c;
+    }
+    out[o] = '\0';
+}
+
+static int jl25_app_send_json_len(int fd, const char* json, size_t len)
+{
+    return jl25_http_send_response(fd, 200, "OK",
+        "application/json; charset=utf-8",
+        json, len);
+}
+
+static int jl25_app_send_json(int fd, const char* json)
+{
+    return jl25_app_send_json_len(fd, json, strlen(json));
+}
+
+static void jl25_app_send_simple(int fd, int result, const char* info)
+{
+    char body[256];
+    snprintf(body, sizeof(body),
+        "{\"result\":%d,\"info\":\"%s\"}",
+        result, info != NULL ? info : "");
+    jl25_app_send_json(fd, body);
+}
+
+static int jl25_app_get_mac(char* mac, size_t mac_sz)
+{
+    char path[96];
+    int fd;
+    ssize_t n;
+
+    snprintf(path, sizeof(path), "/sys/class/net/%s/address",
+        HAL_WIFI_INTERFACE_NAME);
+    fd = open(path, O_RDONLY);
+    if (fd < 0) {
+        return -1;
+    }
+    n = read(fd, mac, mac_sz - 1);
+    close(fd);
+    if (n <= 0) {
+        return -1;
+    }
+    mac[n] = '\0';
+    while (n > 0 && (mac[n - 1] == '\n' || mac[n - 1] == '\r' || mac[n - 1] == ' ' || mac[n - 1] == '\t')) {
+        mac[--n] = '\0';
+    }
+    return 0;
+}
+
+/* Keep the SSID reported to APP identical to the SSID generated by the
+ * hotspot page before WIFI_AP_Start().  The parameter stores only the base
+ * name; the AP runtime name appends the last three MAC bytes as six uppercase
+ * hexadecimal characters. */
+void jl25_make_ap_ssid(const char* base, char* out, size_t out_sz)
+{
+    char mac[32] = { 0 };
+    char tail[8] = { 0 };
+    int i;
+    int n = 0;
+    int base_max;
+
+    if (out_sz == 0) {
+        return;
+    }
+    if (base == NULL || base[0] == '\0') {
+        base = "SOPHCAM_XXXX";
+    }
+    if (jl25_app_get_mac(mac, sizeof(mac)) != 0 || mac[0] == '\0') {
+        snprintf(out, out_sz, "%s", base);
+        return;
+    }
+
+    /* Collect hex digits backwards (skipping ':'), then restore their order. */
+    for (i = (int)strlen(mac) - 1; i >= 0 && n < 6; i--) {
+        char c = mac[i];
+        if (c >= '0' && c <= '9') {
+            tail[n++] = c;
+        } else if (c >= 'a' && c <= 'f') {
+            tail[n++] = (char)(c - 'a' + 'A');
+        } else if (c >= 'A' && c <= 'F') {
+            tail[n++] = c;
+        }
+    }
+    if (n == 0) {
+        snprintf(out, out_sz, "%s", base);
+        return;
+    }
+    for (i = 0; i < n / 2; i++) {
+        char c = tail[i];
+        tail[i] = tail[n - 1 - i];
+        tail[n - 1 - i] = c;
+    }
+    tail[n] = '\0';
+
+    /* HAL_WIFI_SSID_LEN is 32, so reserve '_' + NUL for the suffix. */
+    base_max = (int)out_sz - n - 2;
+    if (base_max < 0) {
+        base_max = 0;
+    }
+    snprintf(out, out_sz, "%.*s_%s", base_max, base, tail);
+}
+
+static int jl25_app_is_video_name(const char* name)
+{
+    const char* ext = strrchr(name, '.');
+
+    if (ext == NULL) {
+        return 0;
+    }
+    return jl25_app_caseeq(ext, ".mov") || jl25_app_caseeq(ext, ".mp4") || jl25_app_caseeq(ext, ".avi");
+}
+
+static int jl25_app_collect_dir(const char* dir, const char* url_prefix, int type,
+    jl25_app_file_t* files, int max_cnt)
+{
+    DIR* d;
+    struct dirent* ent;
+    int cnt = 0;
+
+    d = opendir(dir);
+    if (d == NULL) {
+        return 0;
+    }
+    while ((ent = readdir(d)) != NULL) {
+        char fullpath[256];
+        struct stat sb;
+        jl25_app_file_t* f;
+
+        if (ent->d_name[0] == '.') {
+            continue;
+        }
+        snprintf(fullpath, sizeof(fullpath), "%s/%s", dir, ent->d_name);
+        if (stat(fullpath, &sb) != 0 || !S_ISREG(sb.st_mode)) {
+            continue;
+        }
+        if (cnt >= max_cnt) {
+            break;
+        }
+        f = &files[cnt++];
+        snprintf(f->name, sizeof(f->name), "%s", ent->d_name);
+        snprintf(f->url, sizeof(f->url), "%s/%s", url_prefix, ent->d_name);
+        f->type = type;
+        f->size_kb = (unsigned int)((sb.st_size + 1023) / 1024);
+        f->create_time = sb.st_mtime;
+    }
+    closedir(d);
+    return cnt;
+}
+
+static int jl25_app_file_cmp_desc(const void* a, const void* b)
+{
+    const jl25_app_file_t* fa = (const jl25_app_file_t*)a;
+    const jl25_app_file_t* fb = (const jl25_app_file_t*)b;
+
+    if (fa->create_time > fb->create_time) {
+        return -1;
+    }
+    if (fa->create_time < fb->create_time) {
+        return 1;
+    }
+    return strcmp(fa->name, fb->name);
+}
+
+static int jl25_app_scan_files(jl25_app_file_t* movies, int* movie_cnt,
+    jl25_app_file_t* photos, int* photo_cnt)
+{
+    *movie_cnt = jl25_app_collect_dir(JL25_APP_MOVIE_DIR, "/DCIM/MOVIE",
+        2, movies, JL25_APP_MAX_FILES);
+    *photo_cnt = jl25_app_collect_dir(JL25_APP_PHOTO_DIR, "/DCIM/PHOTO",
+        1, photos, JL25_APP_MAX_FILES);
+    if (*movie_cnt > 1) {
+        qsort(movies, *movie_cnt, sizeof(*movies), jl25_app_file_cmp_desc);
+    }
+    if (*photo_cnt > 1) {
+        qsort(photos, *photo_cnt, sizeof(*photos), jl25_app_file_cmp_desc);
+    }
+    return 0;
+}
+
+static void jl25_app_time_str(time_t t, char* out, size_t out_sz)
+{
+    struct tm tmv;
+
+    localtime_r(&t, &tmv);
+    snprintf(out, out_sz, "%04d%02d%02d%02d%02d%02d",
+        tmv.tm_year + 1900, tmv.tm_mon + 1, tmv.tm_mday,
+        tmv.tm_hour, tmv.tm_min, tmv.tm_sec);
+}
+
+static void jl25_app_append_file_json(char* json, size_t cap, size_t* off,
+    const jl25_app_file_t* f, int first)
+{
+    char name_esc[256];
+    char filename_esc[160];
+    char time_str[32];
+
+    jl25_app_json_escape(f->url, name_esc, sizeof(name_esc));
+    jl25_app_json_escape(f->name, filename_esc, sizeof(filename_esc));
+    jl25_app_time_str(f->create_time, time_str, sizeof(time_str));
+    *off += (size_t)snprintf(json + *off, cap - *off,
+        "%s{\"name\":\"%s\",\"duration\":-1,"
+        "\"filename\":\"%s\",\"url\":\"%s\","
+        "\"size\":%u,\"createtime\":%lld,"
+        "\"createtimestr\":\"%s\",\"type\":%d}",
+        first ? "" : ",",
+        filename_esc, filename_esc, name_esc, f->size_kb,
+        (long long)f->create_time, time_str, f->type);
+}
+
+static void jl25_app_get_productinfo(int fd)
+{
+    jl25_app_send_json(fd,
+        /*
+         * Keep the same product template as the production netctrl
+         * implementation. The APP uses these values when selecting its
+         * feature menu; a DC309-specific product name can enable fallback
+         * actions such as file locking even when capability disables them.
+         */
+        "{\"result\":0,\"info\":{\"model\":\"cardv\","
+        "\"company\":\"sophgo\",\"soc\":\"sophgo\",\"sp\":\"cv\"}}");
+}
+
+static void jl25_app_get_capability(int fd)
+{
+    /*
+     * 兼容两类 APP 解析方式：
+     * 1) 老字段风格：format/reset/rec_resolution/photo_resolution
+     * 2) V2.9 位图风格：
+     *    - 第 3 位：文件加锁能力，0 表示不支持
+     *    - 第 4 位：加锁文件是否允许删除，0 表示允许删除
+     *    - 第 8 位：WiFi 名称/密码能力，3 表示两项均隐藏
+     *    - bit index 14（能力字符串第 15 个字符）：紧急相册能力，
+     *      1 表示不支持
+     *    当前值为 00000000300000100。
+     */
+    jl25_app_send_json(fd,
+        "{\"result\":0,\"info\":{"
+        "\"format\":1,\"reset\":1,"
+        "\"rec_resolution\":1,\"image_size\":1,\"photo_resolution\":1,"
+        "\"wifi\":0,\"ssid\":0,\"password\":0,\"wifireboot\":0,"
+        "\"support_change_wifi_name_pwd\":0,"
+        "\"value\":\"00000000300000100\"}}");
+}
+
+static void jl25_app_get_deviceattr(int fd)
+{
+    PARAM_MENU_S menu = { 0 };
+    PARAM_WIFI_S wifi = { 0 };
+    char mac[32] = "00:00:00:00:00:00";
+    char ssid[HAL_WIFI_SSID_LEN] = "SOPHCAM_XXXX";
+    char ssid_escaped[HAL_WIFI_SSID_LEN * 2 + 1];
+    int camnum = 1;
+    char body[512];
+
+    PARAM_GetMenuParam(&menu);
+    if (PARAM_GetWifiParam(&wifi) == 0
+        && wifi.WifiCfg.unCfg.stApCfg.stCfg.szWiFiSSID[0] != '\0') {
+        jl25_make_ap_ssid(wifi.WifiCfg.unCfg.stApCfg.stCfg.szWiFiSSID,
+            ssid, sizeof(ssid));
+    } else {
+        jl25_make_ap_ssid("SOPHCAM_XXXX", ssid, sizeof(ssid));
+    }
+    jl25_app_json_escape(ssid, ssid_escaped, sizeof(ssid_escaped));
+    if (jl25_app_get_mac(mac, sizeof(mac)) != 0) {
+        snprintf(mac, sizeof(mac), "00:00:00:00:00:00");
+    }
+    if (((menu.ViewWin.Current >> 1) & 0x1) == 1) {
+        camnum = 2;
+    }
+    if (jl25_preview_ensure_movie_mode() != 0) {
+        MLOG_ERR("jl25 app deviceattr preview mode switch fail\n");
+    }
+    snprintf(body, sizeof(body),
+        "{\"result\":0,\"info\":{\"uuid\":\"%s\","
+        "\"ssid\":\"%s\","
+        "\"bssid\":\"%s\","
+        "\"softver\":\"%s\",\"hwver\":\"DC309\","
+        "\"camnum\":%d,\"curcamid\":0}}",
+        mac, ssid_escaped, mac, JL25_APP_VERSION, camnum);
+    jl25_app_send_json(fd, body);
+}
+
+static void jl25_app_get_mediainfo(int fd)
+{
+    char rtsp[192];
+    char body[384];
+
+    if (jl25_preview_start() != 0) {
+        MLOG_ERR("jl25 app mediainfo preview start fail\n");
+    }
+    jl25_preview_build_rtsp_url(rtsp, sizeof(rtsp));
+    MLOG_INFO("jl25 app mediainfo rtsp=[%s] active=%d\n",
+        rtsp, jl25_preview_is_active());
+    snprintf(body, sizeof(body),
+        "{\"result\":0,\"info\":{\"rtsp\":\"%s\","
+        "\"transport\":\"udp\",\"port\":6035,\"page\":1,\"rectime\":1}}",
+        rtsp);
+    jl25_app_send_json(fd, body);
+}
+
+static void jl25_app_get_sdinfo(int fd)
+{
+    char body[256];
+    struct statvfs vfs;
+    int status;
+
+    status = jl25_storage_get_app_status();
+    if (status == 13) {
+        jl25_app_send_json(fd, "{\"result\":0,\"info\":{\"status\":13}}");
+        return;
+    }
+    if (jl25_storage_access_begin() != 0) {
+        status = jl25_storage_get_app_status();
+        if (status == 13) {
+            jl25_app_send_json(fd, "{\"result\":0,\"info\":{\"status\":13}}");
+            return;
+        }
+        jl25_app_send_simple(fd, -1, "storage busy.");
+        return;
+    }
+
+    status = jl25_storage_get_app_status();
+    if (status == 13) {
+        jl25_storage_access_end();
+        jl25_app_send_json(fd, "{\"result\":0,\"info\":{\"status\":13}}");
+        return;
+    }
+
+    if (status == 0 && statvfs("/mnt/sd", &vfs) == 0) {
+        unsigned long long total = (unsigned long long)vfs.f_blocks * vfs.f_frsize >> 20;
+        unsigned long long free_mb = (unsigned long long)vfs.f_bavail * vfs.f_frsize >> 20;
+        snprintf(body, sizeof(body),
+            "{\"result\":0,\"info\":{\"status\":0,"
+            "\"free\":%llu,\"total\":%llu}}",
+            free_mb, total);
+    } else {
+        if (status == 0) {
+            status = 12;
+        }
+        snprintf(body, sizeof(body),
+            "{\"result\":0,\"info\":{\"status\":%d}}", status);
+    }
+    jl25_storage_access_end();
+    jl25_app_send_json(fd, body);
+}
+
+static void jl25_app_set_systime(int fd, const char* query)
+{
+    char date[32];
+    struct tm tmv;
+    time_t ts;
+    struct timespec tsp;
+
+    memset(&tmv, 0, sizeof(tmv));
+    if (jl25_app_query_get(query, "date", date, sizeof(date)) == NULL || strlen(date) != 14 || sscanf(date, "%4d%2d%2d%2d%2d%2d", &tmv.tm_year, &tmv.tm_mon, &tmv.tm_mday, &tmv.tm_hour, &tmv.tm_min, &tmv.tm_sec) != 6) {
+        jl25_app_send_simple(fd, -1, "set fail.");
+        return;
+    }
+    tmv.tm_year -= 1900;
+    tmv.tm_mon -= 1;
+    ts = mktime(&tmv);
+    if (ts <= 0) {
+        jl25_app_send_simple(fd, -1, "set fail.");
+        return;
+    }
+    tsp.tv_sec = ts;
+    tsp.tv_nsec = 0;
+    clock_settime(CLOCK_REALTIME, &tsp);
+    jl25_app_send_simple(fd, 0, "set success.");
+}
+
+static void jl25_app_get_recduration(int fd)
+{
+    struct timespec now;
+    struct timespec start;
+    PARAM_MEDIA_COMM_S media_comm = { 0 };
+    uint64_t elapsed_ms = 0;
+    uint64_t split_ms = 0;
+    unsigned int duration = 0;
+    int recording;
+
+    recording = jl25_capture_is_recording();
+    if (!recording) {
+        jl25_app_record_duration_stop();
+        jl25_app_send_json(fd, "{\"result\":0,\"info\":{\"duration\":0}}");
+        return;
+    }
+
+    /* Initialize lazily when the APP starts polling after recording began. */
+    jl25_app_record_duration_start();
+    clock_gettime(CLOCK_MONOTONIC, &now);
+
+    pthread_mutex_lock(&s_jl25_app_duration_mutex);
+    start = s_jl25_app_record_start;
+    if (s_jl25_app_record_start_valid
+        && (now.tv_sec > start.tv_sec
+            || (now.tv_sec == start.tv_sec && now.tv_nsec >= start.tv_nsec))) {
+        elapsed_ms = (uint64_t)(now.tv_sec - start.tv_sec) * 1000ULL;
+        if (now.tv_nsec >= start.tv_nsec) {
+            elapsed_ms += (uint64_t)(now.tv_nsec - start.tv_nsec) / 1000000ULL;
+        } else {
+            elapsed_ms -= 1000ULL;
+            elapsed_ms += (uint64_t)(1000000000L + now.tv_nsec - start.tv_nsec) / 1000000ULL;
+        }
+    }
+    pthread_mutex_unlock(&s_jl25_app_duration_mutex);
+
+    /* Report the current file duration.  Loop recording starts a new file at
+     * SplitTime milliseconds, so wrap the session timer at that boundary. */
+    if (PARAM_GetMediaComm(&media_comm) == 0) {
+        split_ms = media_comm.Record.ChnAttrs[0].SplitTime;
+    }
+    if (split_ms > 0) {
+        elapsed_ms %= split_ms;
+    }
+    duration = (unsigned int)(elapsed_ms / 1000ULL);
+
+    {
+        char body[96];
+        snprintf(body, sizeof(body),
+            "{\"result\":0,\"info\":{\"duration\":%u}}", duration);
+        jl25_app_send_json(fd, body);
+    }
+}
+
+static void jl25_app_get_lockvideo_status(int fd)
+{
+    /*
+     * Keep this endpoint compatible with the production netctrl behavior.
+     * Returning HTTP 404 makes some APP versions fall back to their built-in
+     * lock menu. An empty successful status means there are no lock records
+     * while capability bit 3 remains disabled, so the lock action stays
+     * hidden and file deletion remains available.
+     */
+    MLOG_INFO("jl25 app lock-video status: empty, lock unsupported\n");
+    jl25_app_send_json(fd, "{\"result\":0,\"info\":[]}");
+}
+
+static void jl25_app_reject_lockvideo(int fd)
+{
+    MLOG_INFO("jl25 app lock-video command rejected with HTTP 404\n");
+    jl25_http_send_response(fd, 404, "Not Found", "application/json",
+        "{\"result\":-1,\"info\":\"unsupported.\"}",
+        sizeof("{\"result\":-1,\"info\":\"unsupported.\"}") - 1);
+}
+
+/* ==================== 分辨率设置项 ==================== */
+
+/* 设置项参数名，沿用旧版 netctrl /app/ 接口的命名，APP 端据此建设置页 */
+#define JL25_PARAM_REC_RESOLUTION "rec_resolution" /* 录像分辨率 */
+#define JL25_PARAM_PHOTO_RESOLUTION "photo_resolution" /* 拍照分辨率兼容名 */
+#define JL25_PARAM_IMAGE_SIZE "image_size" /* 新版协议拍照分辨率 */
+
+#define JL25_APP_MODE_WAIT_MS 100
+#define JL25_APP_MODE_WAIT_CNT 100
+
+static pthread_mutex_t s_jl25_app_resolution_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t s_jl25_app_reset_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+void jl25_app_record_duration_start(void)
+{
+    pthread_mutex_lock(&s_jl25_app_duration_mutex);
+    if (!s_jl25_app_record_start_valid) {
+        clock_gettime(CLOCK_MONOTONIC, &s_jl25_app_record_start);
+        s_jl25_app_record_start_valid = 1;
+    }
+    pthread_mutex_unlock(&s_jl25_app_duration_mutex);
+}
+
+void jl25_app_record_duration_stop(void)
+{
+    pthread_mutex_lock(&s_jl25_app_duration_mutex);
+    s_jl25_app_record_start_valid = 0;
+    memset(&s_jl25_app_record_start, 0, sizeof(s_jl25_app_record_start));
+    pthread_mutex_unlock(&s_jl25_app_duration_mutex);
+}
+
+/* 设置项名 -> PARAM_MENU_E（下发设置消息时的 arg1） */
+static int jl25_param_menu_id(const char* name)
+{
+    if (strcmp(name, JL25_PARAM_REC_RESOLUTION) == 0) {
+        return PARAM_MENU_VIDEO_SIZE;
+    }
+    if (strcmp(name, JL25_PARAM_PHOTO_RESOLUTION) == 0) {
+        return PARAM_MENU_PHOTO_SIZE;
+    }
+    if (strcmp(name, JL25_PARAM_IMAGE_SIZE) == 0) {
+        return PARAM_MENU_PHOTO_SIZE;
+    }
+    return -1;
+}
+
+/* 设置项名 -> 菜单参数表项（候选列表与当前值） */
+static PARAM_VALUESET_S* jl25_param_valueset(PARAM_MENU_S* menu, const char* name)
+{
+    if (strcmp(name, JL25_PARAM_REC_RESOLUTION) == 0) {
+        return &menu->VideoSize;
+    }
+    if (strcmp(name, JL25_PARAM_PHOTO_RESOLUTION) == 0) {
+        return &menu->PhotoSize;
+    }
+    if (strcmp(name, JL25_PARAM_IMAGE_SIZE) == 0) {
+        return &menu->PhotoSize;
+    }
+    return NULL;
+}
+
+static int jl25_app_switch_work_mode(WORK_MODE_E target)
+{
+    MESSAGE_S msg = { 0 };
+    int i;
+
+    if (MODEMNG_GetCurWorkMode() != (int32_t)target) {
+        MLOG_INFO("jl25 app switch mode: cur=%d target=%d\n",
+            MODEMNG_GetCurWorkMode(), target);
+        msg.topic = EVENT_MODEMNG_MODESWITCH;
+        msg.arg1 = (int32_t)target;
+        if (MODEMNG_SendMessage(&msg) != 0) {
+            return -1;
+        }
+    }
+
+    for (i = 0; i < JL25_APP_MODE_WAIT_CNT; i++) {
+        if (MODEMNG_GetCurWorkMode() == (int32_t)target
+            && !MODEMNG_GetInProgress()) {
+            return 0;
+        }
+        usleep(JL25_APP_MODE_WAIT_MS * 1000);
+    }
+    return -1;
+}
+
+static int jl25_app_wait_mode_idle(void)
+{
+    int i;
+
+    for (i = 0; i < JL25_APP_MODE_WAIT_CNT; i++) {
+        if (!MODEMNG_GetInProgress()) {
+            return 0;
+        }
+        usleep(JL25_APP_MODE_WAIT_MS * 1000);
+    }
+    return -1;
+}
+
+/* Match DC100: replace settings while preserving the active media topology.
+ * Loading the complete default blob directly would replace MediaComm.Vpss and
+ * CamCfg while VI/VPSS/VENC are still running, which is the source of the
+ * subsequent SYS_Bind/VENC-handle failures seen on DC309. */
+static int jl25_app_load_default_param(PARAM_CFG_S* param)
+{
+    PARAM_CFG_S current = { 0 };
+    uint32_t wnd_cnt;
+    uint32_t i;
+
+    if (PARAM_GetParam(&current) != 0) {
+        MLOG_ERR("jl25 app factory reset: get current param failed\n");
+        return -1;
+    }
+    if (PARAM_LoadFromDefBin(param) != 0) {
+        MLOG_ERR("jl25 app factory reset: load default param failed\n");
+        return -1;
+    }
+
+    MLOG_INFO("jl25 app factory reset: default photo menu=%u photoid=%u video menu=%u\n",
+        (unsigned int)param->Menu.PhotoSize.Current,
+        (unsigned int)param->MediaComm.Photo.photoid,
+        (unsigned int)param->Menu.VideoSize.Current);
+
+    wnd_cnt = current.MediaComm.Window.WndCnt;
+    if (wnd_cnt > PARAM_WND_NUM_MAX) {
+        wnd_cnt = PARAM_WND_NUM_MAX;
+    }
+    param->MediaComm.Window.WndCnt = wnd_cnt;
+    for (i = 0; i < wnd_cnt; i++) {
+        param->MediaComm.Window.Wnds[i].WndEnable = current.MediaComm.Window.Wnds[i].WndEnable;
+        param->MediaComm.Window.Wnds[i].SmallWndEnable = current.MediaComm.Window.Wnds[i].SmallWndEnable;
+    }
+
+    param->MediaComm.PowerOnMode = current.MediaComm.PowerOnMode;
+    param->MediaComm.Vpss = current.MediaComm.Vpss;
+    /*
+     * Keep the running record graph's channel/ VENC bindings.  DC309's
+     * default blob can use a different BindVencId from the graph which is
+     * already alive; replacing it makes the next RTSP start look up a handle
+     * that was never created ("preview venc handle missing").
+     */
+    param->MediaComm.Record.ChnCnt = current.MediaComm.Record.ChnCnt;
+    param->MediaComm.Rtsp = current.MediaComm.Rtsp;
+    param->MediaComm.Piv = current.MediaComm.Piv;
+    param->MediaComm.Thumbnail = current.MediaComm.Thumbnail;
+    param->MediaComm.SubPic = current.MediaComm.SubPic;
+    for (i = 0; i < MAX_CAMERA_INSTANCES; i++) {
+        param->CamCfg[i].CamEnable = current.CamCfg[i].CamEnable;
+        param->CamCfg[i].CamIspEnable = current.CamCfg[i].CamIspEnable;
+        param->CamCfg[i].CamMediaInfo = current.CamCfg[i].CamMediaInfo;
+        param->MediaComm.Record.ChnAttrs[i].Enable = current.MediaComm.Record.ChnAttrs[i].Enable;
+        param->MediaComm.Record.ChnAttrs[i].Subvideoen = current.MediaComm.Record.ChnAttrs[i].Subvideoen;
+        param->MediaComm.Record.ChnAttrs[i].SubBindVencId = current.MediaComm.Record.ChnAttrs[i].SubBindVencId;
+        param->MediaComm.Record.ChnAttrs[i].BindVencId = current.MediaComm.Record.ChnAttrs[i].BindVencId;
+        param->MediaComm.Record.ChnAttrs[i].FocusPos = current.MediaComm.Record.ChnAttrs[i].FocusPos;
+        param->MediaComm.Record.ChnAttrs[i].FocusPosLock = current.MediaComm.Record.ChnAttrs[i].FocusPosLock;
+    }
+    return 0;
+}
+
+static int jl25_app_apply_default_param(void)
+{
+    PARAM_CFG_S param = { 0 };
+
+    if (jl25_app_load_default_param(&param) != 0) {
+        return -1;
+    }
+    if (PARAM_SetParam(&param) != 0) {
+        MLOG_ERR("jl25 app factory reset: set param failed\n");
+        return -1;
+    }
+    if (PARAM_SaveParam() != 0) {
+        MLOG_ERR("jl25 app factory reset: save param failed\n");
+        return -1;
+    }
+    return 0;
+}
+
+static int jl25_app_wait_resolution(PARAM_MENU_E menu_id, int value)
+{
+    PARAM_MENU_S menu = { 0 };
+    PARAM_VALUESET_S* set = NULL;
+    int i;
+
+    for (i = 0; i < JL25_APP_MODE_WAIT_CNT; i++) {
+        if (PARAM_GetMenuParam(&menu) == 0) {
+            if (menu_id == PARAM_MENU_VIDEO_SIZE) {
+                set = &menu.VideoSize;
+            } else if (menu_id == PARAM_MENU_PHOTO_SIZE) {
+                set = &menu.PhotoSize;
+            }
+            if (set != NULL && set->Current == (uint32_t)value) {
+                return 0;
+            }
+        }
+        usleep(JL25_APP_MODE_WAIT_MS * 1000);
+    }
+    return -1;
+}
+
+/* Apply the persisted movie-size default to the live movie graph. */
+static int jl25_app_apply_movie_resolution(int value)
+{
+    MESSAGE_S msg = { 0 };
+    int i;
+    int saw_busy = 0;
+
+    msg.topic = EVENT_MODEMNG_SETTING;
+    msg.arg1 = PARAM_MENU_VIDEO_SIZE;
+    msg.arg2 = value;
+    if (MODEMNG_SendMessage(&msg) != 0) {
+        MLOG_ERR("jl25 app factory reset: send default video size failed\n");
+        return -1;
+    }
+
+    /* MODEMNG handles the message asynchronously.  Do not let preview start
+     * race MEDIA_VencDeInit/Init while the movie graph is being rebuilt. */
+    for (i = 0; i < JL25_APP_MODE_WAIT_CNT; i++) {
+        if (MODEMNG_GetInProgress()) {
+            saw_busy = 1;
+            break;
+        }
+        usleep(JL25_APP_MODE_WAIT_MS * 1000);
+    }
+    if (!saw_busy) {
+        /* The HFSM may have completed before the first poll. */
+        return 0;
+    }
+    for (i = 0; i < JL25_APP_MODE_WAIT_CNT; i++) {
+        if (!MODEMNG_GetInProgress()) {
+            return 0;
+        }
+        usleep(JL25_APP_MODE_WAIT_MS * 1000);
+    }
+    MLOG_ERR("jl25 app factory reset: default video size still busy\n");
+    return -1;
+}
+
+/* 候选数量（防御性裁剪，避免异常配置越界） */
+static uint32_t jl25_param_item_cnt(const PARAM_VALUESET_S* set)
+{
+    if (set->ItemCnt > PARAM_MENU_ITEM_MAX) {
+        return PARAM_MENU_ITEM_MAX;
+    }
+    return set->ItemCnt;
+}
+
+/*
+ * The APP changes PARAM_MENU_* from the protocol thread.  The DC309 UI keeps
+ * the photo/video resolution label and icon index in static UI state, which
+ * was only initialized at UI startup.  Sync that state after a completed APP
+ * setting so the next local photo/video page reflects the applied parameter.
+ */
+static void jl25_app_sync_resolution_ui(PARAM_MENU_E menu_id)
+{
+    PARAM_MENU_S menu = { 0 };
+    PARAM_VALUESET_S* set = NULL;
+
+    if (PARAM_GetMenuParam(&menu) != 0) {
+        MLOG_ERR("jl25 app resolution UI sync: get menu failed\n");
+        return;
+    }
+
+    if (menu_id == PARAM_MENU_VIDEO_SIZE) {
+        set = &menu.VideoSize;
+    } else if (menu_id == PARAM_MENU_PHOTO_SIZE) {
+        set = &menu.PhotoSize;
+    }
+    if (set == NULL || set->Current >= jl25_param_item_cnt(set)) {
+        MLOG_ERR("jl25 app resolution UI sync: invalid menu=%d index=%u\n",
+            menu_id, set == NULL ? 0U : (unsigned int)set->Current);
+        return;
+    }
+
+    update_setting_from_param();
+    MLOG_INFO("jl25 app resolution UI sync: menu=%d index=%u desc=%s\n",
+        menu_id, (unsigned int)set->Current, set->Items[set->Current].Desc);
+}
+
+/*
+ * 6.4.1 查询设置项候选列表
+ *   {"result":0,"info":[{"name":"rec_resolution",
+ *                        "items":["4K","2.7K"],"index":[0,1]}, ...]}
+ * index 与 items 一一对应，setparamvalue 时原样回传即可。
+ */
+static void jl25_app_get_paramitems(int fd)
+{
+    PARAM_MENU_S menu = { 0 };
+    const char* names[2] = { JL25_PARAM_REC_RESOLUTION, JL25_PARAM_IMAGE_SIZE };
+    PARAM_VALUESET_S* sets[2];
+    size_t cap = 4096;
+    char* json;
+    size_t off = 0;
+    int first = 1;
+    int p;
+
+    json = (char*)malloc(cap);
+    if (json == NULL) {
+        jl25_app_send_simple(fd, -1, "alloc fail.");
+        return;
+    }
+    PARAM_GetMenuParam(&menu);
+    sets[0] = &menu.VideoSize;
+    sets[1] = &menu.PhotoSize;
+
+    off += (size_t)snprintf(json + off, cap - off, "{\"result\":0,\"info\":[");
+    for (p = 0; p < 2; p++) {
+        PARAM_VALUESET_S* set = sets[p];
+        char desc[PARAM_MENU_ITEM_DESC_LEN * 2];
+        uint32_t cnt = jl25_param_item_cnt(set);
+        uint32_t i;
+
+        if (cnt == 0) {
+            continue;
+        }
+
+        off += (size_t)snprintf(json + off, cap - off,
+            "%s{\"name\":\"%s\",\"items\":[", first ? "" : ",", names[p]);
+        for (i = 0; i < cnt; i++) {
+            jl25_app_json_escape(set->Items[i].Desc, desc, sizeof(desc));
+            off += (size_t)snprintf(json + off, cap - off, "%s\"%s\"",
+                i == 0 ? "" : ",", desc);
+        }
+
+        off += (size_t)snprintf(json + off, cap - off, "],\"index\":[");
+        for (i = 0; i < cnt; i++) {
+            off += (size_t)snprintf(json + off, cap - off, "%s%u",
+                i == 0 ? "" : ",", (unsigned int)i);
+        }
+        off += (size_t)snprintf(json + off, cap - off, "]}");
+        first = 0;
+    }
+    off += (size_t)snprintf(json + off, cap - off, "]}");
+
+    jl25_app_send_json_len(fd, json, off);
+    free(json);
+}
+
+/*
+ * 6.4.2 查询设置项当前值
+ *   ?param=all -> {"result":0,"info":[{"name":"rec_resolution","value":0}, ...]}
+ *   ?param=xxx -> {"result":0,"info":{"value":0}}
+ */
+static void jl25_app_get_paramvalue(int fd, const char* query)
+{
+    PARAM_MENU_S menu = { 0 };
+    char param[64];
+    char body[256];
+
+    PARAM_GetMenuParam(&menu);
+
+    if (jl25_app_query_get(query, "param", param, sizeof(param)) != NULL
+        && strcmp(param, "all") != 0) {
+        PARAM_VALUESET_S* set = jl25_param_valueset(&menu, param);
+        if (set == NULL) {
+            jl25_app_send_simple(fd, -1, "unsupported.");
+            return;
+        }
+        snprintf(body, sizeof(body), "{\"result\":0,\"info\":{\"value\":%u}}",
+            (unsigned int)set->Current);
+        jl25_app_send_json(fd, body);
+        return;
+    }
+
+    snprintf(body, sizeof(body),
+        "{\"result\":0,\"info\":["
+        "{\"name\":\"%s\",\"value\":%u},"
+        "{\"name\":\"%s\",\"value\":%u}]}",
+        JL25_PARAM_REC_RESOLUTION, (unsigned int)menu.VideoSize.Current,
+        JL25_PARAM_IMAGE_SIZE, (unsigned int)menu.PhotoSize.Current);
+    jl25_app_send_json(fd, body);
+}
+
+static void jl25_app_setting(int fd, const char* query)
+{
+    char param[32];
+
+    if (jl25_app_query_get(query, "param", param, sizeof(param)) == NULL
+        || (!jl25_app_caseeq(param, "enter")
+            && !jl25_app_caseeq(param, "exit"))) {
+        jl25_app_send_simple(fd, -1, "unsupported.");
+        return;
+    }
+
+    /*
+     * This is only a settings-page navigation action. Returning success
+     * prevents APP fallback to its built-in menu, which includes factory
+     * reset even when the device capability disables it.
+     */
+    MLOG_INFO("jl25 app settings navigation: %s\n", param);
+    jl25_app_send_simple(fd, 0, "set success.");
+}
+
+/*
+ * 下发分辨率设置：走与本地设置页相同的 EVENT_MODEMNG_SETTING 消息。
+ * 切分辨率会重建媒体通路，因此先停预览再切，切完再恢复。
+ */
+static int jl25_app_apply_resolution(const char* param, int value)
+{
+    PARAM_MENU_S menu = { 0 };
+    PARAM_VALUESET_S* set;
+    MESSAGE_S msg = { 0 };
+    WORK_MODE_E original_mode;
+    WORK_MODE_E target_mode;
+    int menu_id;
+    int preview_on = 0;
+    int switched_mode = 0;
+    int ret = -1;
+
+    pthread_mutex_lock(&s_jl25_app_resolution_mutex);
+    menu_id = jl25_param_menu_id(param);
+    if (menu_id < 0) {
+        goto out;
+    }
+
+    PARAM_GetMenuParam(&menu);
+    set = jl25_param_valueset(&menu, param);
+    if (set == NULL || value < 0 || (uint32_t)value >= jl25_param_item_cnt(set)) {
+        MLOG_ERR("jl25 app resolution out of range: %s=%d\n", param, value);
+        goto out;
+    }
+    if (set->Current == (uint32_t)value) {
+        ret = 0;
+        goto out;
+    }
+
+    original_mode = (WORK_MODE_E)MODEMNG_GetCurWorkMode();
+    target_mode = (menu_id == PARAM_MENU_PHOTO_SIZE)
+        ? WORK_MODE_PHOTO
+        : WORK_MODE_MOVIE;
+    preview_on = jl25_preview_is_active();
+    if (preview_on) {
+        if (jl25_preview_stop() != 0) {
+            MLOG_ERR("jl25 app preview stop before resolution switch fail\n");
+            goto out;
+        }
+    }
+
+    if (original_mode != target_mode) {
+        if (jl25_app_switch_work_mode(target_mode) != 0) {
+            MLOG_ERR("jl25 app switch mode for %s failed\n", param);
+            goto restore_preview;
+        }
+        switched_mode = 1;
+    }
+
+    msg.topic = EVENT_MODEMNG_SETTING;
+    msg.arg1 = (int32_t)menu_id;
+    msg.arg2 = (int32_t)value;
+    if (MODEMNG_SendMessage(&msg) != 0) {
+        MLOG_ERR("jl25 app set %s send message fail\n", param);
+        goto restore_mode;
+    }
+
+    if (jl25_app_wait_resolution((PARAM_MENU_E)menu_id, value) != 0) {
+        MLOG_ERR("jl25 app set %s=%d was not applied\n", param, value);
+        goto restore_mode;
+    }
+
+    ret = 0;
+    MLOG_INFO("jl25 app set %s=%d applied\n", param, value);
+    jl25_app_sync_resolution_ui((PARAM_MENU_E)menu_id);
+
+restore_mode:
+    if (switched_mode && jl25_app_switch_work_mode(original_mode) != 0) {
+        MLOG_ERR("jl25 app restore mode after %s failed\n", param);
+        ret = -1;
+    }
+
+restore_preview:
+    if (preview_on && jl25_preview_start() != 0) {
+        MLOG_ERR("jl25 app preview restart after %s failed\n", param);
+        ret = -1;
+    }
+
+out:
+    pthread_mutex_unlock(&s_jl25_app_resolution_mutex);
+    return ret;
+}
+
+static void* jl25_app_reset_thread(void* arg)
+{
+    int32_t* result = (int32_t*)arg;
+
+    *result = jl25_app_apply_default_param();
+    return NULL;
+}
+
+static int jl25_app_reset_settings(void)
+{
+    pthread_attr_t attr;
+    pthread_t thread;
+    int32_t result = -1;
+    int ret;
+    int preview_on = 0;
+    int apply_video_size = 0;
+    PARAM_MENU_S menu_before = { 0 };
+    PARAM_MENU_S menu_after = { 0 };
+
+    PARAM_GetMenuParam(&menu_before);
+
+    /* Serialize reset with APP resolution changes because both update PARAM_CFG. */
+    pthread_mutex_lock(&s_jl25_app_resolution_mutex);
+    pthread_mutex_lock(&s_jl25_app_reset_mutex);
+
+    if (jl25_app_wait_mode_idle() != 0) {
+        MLOG_ERR("jl25 app factory reset: mode is still busy\n");
+        goto out;
+    }
+
+    preview_on = jl25_preview_is_active();
+    if (preview_on && jl25_preview_stop() != 0) {
+        MLOG_ERR("jl25 app factory reset: stop preview failed\n");
+        goto out;
+    }
+
+    ret = pthread_attr_init(&attr);
+    if (ret != 0) {
+        MLOG_ERR("jl25 app factory reset: pthread_attr_init failed: %d\n", ret);
+        goto restore_preview;
+    }
+    ret = pthread_attr_setstacksize(&attr, JL25_APP_RESET_STACK_SIZE);
+    if (ret != 0) {
+        MLOG_ERR("jl25 app factory reset: set stack size failed: %d\n", ret);
+        pthread_attr_destroy(&attr);
+        goto restore_preview;
+    }
+    ret = pthread_create(&thread, &attr, jl25_app_reset_thread, &result);
+    pthread_attr_destroy(&attr);
+    if (ret != 0) {
+        MLOG_ERR("jl25 app factory reset: pthread_create failed: %d\n", ret);
+        goto restore_preview;
+    }
+    ret = pthread_join(thread, NULL);
+    if (ret != 0) {
+        MLOG_ERR("jl25 app factory reset: pthread_join failed: %d\n", ret);
+        result = -1;
+    }
+
+    if (result == 0 && MODEMNG_GetCurWorkMode() == WORK_MODE_MOVIE
+        && PARAM_GetMenuParam(&menu_after) == 0
+        && menu_before.VideoSize.Current != menu_after.VideoSize.Current) {
+        apply_video_size = 1;
+    }
+    if (result == 0 && apply_video_size
+        && jl25_app_apply_movie_resolution((int)menu_after.VideoSize.Current) != 0) {
+        result = -1;
+    }
+
+restore_preview:
+    if (preview_on && jl25_preview_start() != 0) {
+        MLOG_ERR("jl25 app factory reset: restart preview failed\n");
+        result = -1;
+    }
+
+out:
+    pthread_mutex_unlock(&s_jl25_app_reset_mutex);
+    pthread_mutex_unlock(&s_jl25_app_resolution_mutex);
+    if (result != 0) {
+        MLOG_ERR("jl25 app factory reset failed: %d\n", result);
+        return result;
+    }
+    /* Reset changes more than resolution (for example PowerOff).  Refresh
+     * every cached UI menu value once the default parameter blob is active. */
+    update_setting_from_param();
+    MLOG_INFO("jl25 app factory reset UI settings synchronized\n");
+    MLOG_INFO("jl25 app factory reset applied without reboot\n");
+    return 0;
+}
+
+static void jl25_app_setparamvalue(int fd, const char* query)
+{
+    char param[32];
+    char value[32];
+    int ret = -1;
+
+    if (jl25_app_query_get(query, "param", param, sizeof(param)) == NULL) {
+        jl25_app_send_simple(fd, -1, "set fail.");
+        return;
+    }
+    if (jl25_app_query_get(query, "value", value, sizeof(value)) == NULL) {
+        value[0] = '\0';
+    }
+
+    /* 设置页项目：录像分辨率 / 拍照分辨率 */
+    if (jl25_param_menu_id(param) >= 0) {
+        if (value[0] == '\0') {
+            jl25_app_send_simple(fd, -1, "set fail.");
+            return;
+        }
+        if (jl25_app_apply_resolution(param, atoi(value)) != 0) {
+            jl25_app_send_simple(fd, -1, "set fail.");
+            return;
+        }
+        jl25_app_send_simple(fd, 0, "set success.");
+        return;
+    }
+
+    /* Keep media controls available; these are not settings-page items. */
+    if (jl25_app_caseeq(param, "rec")) {
+        if (strcmp(value, "1") == 0) {
+            ret = jl25_capture_start_record();
+        } else if (strcmp(value, "0") == 0) {
+            ret = jl25_capture_stop_record();
+        }
+    } else if (jl25_app_caseeq(param, "snapshot") || jl25_app_caseeq(param, "takephoto") || jl25_app_caseeq(param, "photo")) {
+        ret = jl25_capture_take_photo();
+    }
+
+    if (ret != 0) {
+        jl25_app_send_simple(fd, -1, "set fail.");
+        return;
+    }
+    jl25_app_send_simple(fd, 0, "set success.");
+}
+
+static void jl25_app_get_adasitems(int fd)
+{
+    jl25_app_send_json(fd, "{\"result\":0,\"info\":[]}");
+}
+
+static void jl25_app_get_filelist_all(int fd)
+{
+    jl25_app_file_t* movies;
+    jl25_app_file_t* photos;
+    int movie_cnt = 0;
+    int photo_cnt = 0;
+    size_t cap = 262144;
+    char* json;
+    size_t off = 0;
+    int i;
+
+    movies = (jl25_app_file_t*)calloc(JL25_APP_MAX_FILES,
+        sizeof(*movies));
+    photos = (jl25_app_file_t*)calloc(JL25_APP_MAX_FILES,
+        sizeof(*photos));
+    if (movies == NULL || photos == NULL) {
+        free(movies);
+        free(photos);
+        jl25_app_send_simple(fd, -1, "alloc fail.");
+        return;
+    }
+    if (jl25_storage_access_begin() != 0) {
+        free(movies);
+        free(photos);
+        jl25_app_send_simple(fd, -1, "storage busy.");
+        return;
+    }
+    jl25_app_scan_files(movies, &movie_cnt, photos, &photo_cnt);
+    json = (char*)malloc(cap);
+    if (json == NULL) {
+        jl25_storage_access_end();
+        free(movies);
+        free(photos);
+        jl25_app_send_simple(fd, -1, "alloc fail.");
+        return;
+    }
+
+    off += (size_t)snprintf(json + off, cap - off,
+        "{\"result\":0,\"info\":["
+        "{\"folder\":\"loop\",\"count\":%d,\"files\":[",
+        movie_cnt);
+    for (i = 0; i < movie_cnt; i++) {
+        jl25_app_append_file_json(json, cap, &off, &movies[i], i == 0);
+    }
+    off += (size_t)snprintf(json + off, cap - off,
+        "]},{\"folder\":\"event\",\"count\":%d,\"files\":[",
+        photo_cnt);
+    for (i = 0; i < photo_cnt; i++) {
+        jl25_app_append_file_json(json, cap, &off, &photos[i], i == 0);
+    }
+    off += (size_t)snprintf(json + off, cap - off, "]}]}");
+    jl25_storage_access_end();
+    jl25_app_send_json_len(fd, json, off);
+    free(json);
+    free(movies);
+    free(photos);
+}
+
+static void jl25_app_get_filelist_page(int fd, const char* query)
+{
+    jl25_app_file_t* movies;
+    jl25_app_file_t* photos;
+    jl25_app_file_t* list = NULL;
+    int movie_cnt = 0;
+    int photo_cnt = 0;
+    int total = 0;
+    int start = 0;
+    int end = -1;
+    int i;
+    char folder[32];
+    size_t cap = 65536;
+    char* json;
+    size_t off = 0;
+    int out_cnt = 0;
+    char val[32];
+
+    movies = (jl25_app_file_t*)calloc(JL25_APP_MAX_FILES,
+        sizeof(*movies));
+    photos = (jl25_app_file_t*)calloc(JL25_APP_MAX_FILES,
+        sizeof(*photos));
+    if (movies == NULL || photos == NULL) {
+        free(movies);
+        free(photos);
+        jl25_app_send_simple(fd, -1, "alloc fail.");
+        return;
+    }
+    if (jl25_storage_access_begin() != 0) {
+        free(movies);
+        free(photos);
+        jl25_app_send_simple(fd, -1, "storage busy.");
+        return;
+    }
+    jl25_app_scan_files(movies, &movie_cnt, photos, &photo_cnt);
+    if (jl25_app_query_get(query, "folder", folder, sizeof(folder)) == NULL) {
+        jl25_storage_access_end();
+        free(movies);
+        free(photos);
+        jl25_app_send_json(fd, "{\"result\":0,\"info\":[]}");
+        return;
+    }
+    if (jl25_app_caseeq(folder, "loop")) {
+        list = movies;
+        total = movie_cnt;
+    } else if (jl25_app_caseeq(folder, "event") || jl25_app_caseeq(folder, "photo")) {
+        list = photos;
+        total = photo_cnt;
+    } else {
+        jl25_storage_access_end();
+        free(movies);
+        free(photos);
+        jl25_app_send_json(fd, "{\"result\":0,\"info\":[]}");
+        return;
+    }
+    if (jl25_app_query_get(query, "start", val, sizeof(val)) != NULL) {
+        start = atoi(val);
+    }
+    if (jl25_app_query_get(query, "end", val, sizeof(val)) != NULL) {
+        end = atoi(val);
+    }
+    if (start < 0) {
+        start = 0;
+    }
+    if (end < start) {
+        end = start - 1;
+    }
+    if (start > total) {
+        start = total;
+    }
+    if (end >= total) {
+        end = total - 1;
+    }
+    if (end >= start) {
+        out_cnt = end - start + 1;
+    }
+
+    json = (char*)malloc(cap);
+    if (json == NULL) {
+        jl25_storage_access_end();
+        free(movies);
+        free(photos);
+        jl25_app_send_simple(fd, -1, "alloc fail.");
+        return;
+    }
+    off += (size_t)snprintf(json + off, cap - off,
+        "{\"result\":0,\"info\":[{\"folder\":\"%s\","
+        "\"count\":%d,\"files\":[",
+        folder, out_cnt);
+    for (i = start; i <= end && i < total; i++) {
+        jl25_app_append_file_json(json, cap, &off, &list[i],
+            i == start);
+    }
+    off += (size_t)snprintf(json + off, cap - off, "]}]}");
+    jl25_storage_access_end();
+    jl25_app_send_json_len(fd, json, off);
+    free(json);
+    free(movies);
+    free(photos);
+}
+
+static void jl25_app_get_filelist(int fd, const char* query)
+{
+    if (query[0] == '\0' || strstr(query, "folder=") == NULL) {
+        jl25_app_get_filelist_all(fd);
+    } else {
+        jl25_app_get_filelist_page(fd, query);
+    }
+}
+
+static void jl25_app_extract_media_name(const char* src, char* fid, size_t fid_sz)
+{
+    char decoded[256];
+    const char* name;
+
+    jl25_app_url_decode(src, strlen(src), decoded, sizeof(decoded));
+    name = strrchr(decoded, '/');
+    if (name != NULL) {
+        name++;
+    } else {
+        name = decoded;
+    }
+    snprintf(fid, fid_sz, "%s", name);
+}
+
+static void jl25_app_get_thumbnail(int fd, const char* query)
+{
+    char arg[256];
+    char fid[160];
+    char req[256];
+
+    if (jl25_app_query_get(query, "file", arg, sizeof(arg)) == NULL && jl25_app_query_get(query, "name", arg, sizeof(arg)) == NULL && jl25_app_query_get(query, "filename", arg, sizeof(arg)) == NULL && jl25_app_query_get(query, "path", arg, sizeof(arg)) == NULL) {
+        snprintf(arg, sizeof(arg), "%s", query);
+    }
+    jl25_app_extract_media_name(arg, fid, sizeof(fid));
+    if (fid[0] == '\0') {
+        jl25_app_send_simple(fd, -1, "thumb fail.");
+        return;
+    }
+    MLOG_INFO("jl25 app getthumbnail fid=[%s]\n", fid);
+    snprintf(req, sizeof(req), "GetFileTHumb=%s",
+        fid);
+    jl25_storage_handle(req, fd);
+}
+
+static void jl25_app_get_download(int fd, const char* query,
+    const char* request)
+{
+    char arg[256];
+    char fid[160];
+    char value[32];
+    uint64_t offset = 0;
+
+    if (jl25_app_query_get(query, "file", arg, sizeof(arg)) == NULL && jl25_app_query_get(query, "name", arg, sizeof(arg)) == NULL && jl25_app_query_get(query, "filename", arg, sizeof(arg)) == NULL && jl25_app_query_get(query, "path", arg, sizeof(arg)) == NULL) {
+        snprintf(arg, sizeof(arg), "%s", query);
+    }
+    jl25_app_extract_media_name(arg, fid, sizeof(fid));
+    if (fid[0] == '\0') {
+        jl25_app_send_simple(fd, -1, "download fail.");
+        return;
+    }
+    if (jl25_preview_stop() != 0) {
+        MLOG_ERR("jl25 app preview stop before download fail\n");
+    }
+    if (jl25_app_query_get(query, "offset", value, sizeof(value)) != NULL || jl25_app_query_get(query, "start", value, sizeof(value)) != NULL) {
+        offset = strtoull(value, NULL, 10);
+    }
+    MLOG_INFO("jl25 app download fid=[%s] offset=%llu\n",
+        fid, (unsigned long long)offset);
+    jl25_storage_download_fid(fid, offset, request, fd);
+}
+
+static void jl25_app_delete_file(int fd, const char* query)
+{
+    char arg[256];
+    char fid[160];
+
+    if (jl25_app_query_get(query, "file", arg, sizeof(arg)) == NULL
+        && jl25_app_query_get(query, "name", arg, sizeof(arg)) == NULL
+        && jl25_app_query_get(query, "filename", arg, sizeof(arg)) == NULL
+        && jl25_app_query_get(query, "path", arg, sizeof(arg)) == NULL) {
+        snprintf(arg, sizeof(arg), "%s", query);
+    }
+    jl25_app_extract_media_name(arg, fid, sizeof(fid));
+    if (fid[0] == '\0' || jl25_storage_delete_fid(fid) != 0) {
+        MLOG_ERR("jl25 app delete failed fid=[%s]\n", fid);
+        jl25_app_send_simple(fd, -1, "delete fail.");
+        return;
+    }
+    MLOG_INFO("jl25 app delete success fid=[%s]\n", fid);
+    jl25_app_send_simple(fd, 0, "delete success.");
+}
+
+static void jl25_app_send_media_path(int fd, const char* path,
+    const char* request)
+{
+    char fid[160];
+
+    jl25_app_extract_media_name(path, fid, sizeof(fid));
+    if (fid[0] == '\0') {
+        jl25_http_send_response(fd, 404, "Not Found", "text/html",
+            "{\"Result\":-404}", 15);
+        return;
+    }
+    if (jl25_preview_stop() != 0) {
+        MLOG_ERR("jl25 app preview stop before media path download fail\n");
+    }
+    MLOG_INFO("jl25 media path fid=[%s] path=[%s]\n", fid, path);
+    jl25_storage_download_fid(fid, 0, request, fd);
+}
+
+int jl25_app_is_media_path(const char* path)
+{
+    const char* name;
+    const char* ext;
+
+    if (strncmp(path, "/DCIM/", 6) == 0 || strncmp(path, "/mnt/sd/DCIM/", 13) == 0 || strncmp(path, "/A:/mnt/sd/DCIM/", 16) == 0) {
+        return 1;
+    }
+
+    /* Some old APP builds request the bare filename from the list. */
+    name = path[0] == '/' ? path + 1 : path;
+    if (*name == '\0' || strchr(name, '/') != NULL) {
+        return 0;
+    }
+    ext = strrchr(name, '.');
+    return jl25_app_is_video_name(name) || (ext != NULL && (jl25_app_caseeq(ext, ".jpg") || jl25_app_caseeq(ext, ".jpeg")));
+}
+
+void jl25_app_handle_media_path(const char* path, const char* request, int fd)
+{
+    jl25_app_send_media_path(fd, path, request);
+}
+
+void jl25_app_handle(const char* path, const char* query,
+    const char* request, int fd)
+{
+    const char* cmd;
+
+    if (strncmp(path, "/app/", 5) != 0) {
+        jl25_app_send_simple(fd, -1, "unsupported.");
+        return;
+    }
+    cmd = path + 5;
+    MLOG_INFO("jl25 app cmd=[%s] query=[%s]\n", cmd, query);
+
+    if (jl25_app_caseeq(cmd, "getproductinfo")) {
+        jl25_app_get_productinfo(fd);
+    } else if (jl25_app_caseeq(cmd, "capability")) {
+        jl25_app_get_capability(fd);
+    } else if (jl25_app_caseeq(cmd, "getdeviceattr")) {
+        jl25_app_get_deviceattr(fd);
+    } else if (jl25_app_caseeq(cmd, "getmediainfo")) {
+        jl25_app_get_mediainfo(fd);
+    } else if (jl25_app_caseeq(cmd, "getsdinfo") || jl25_app_caseeq(cmd, "getstorageinfo")) {
+        jl25_app_get_sdinfo(fd);
+    } else if (jl25_app_caseeq(cmd, "setsystime")) {
+        jl25_app_set_systime(fd, query);
+    } else if (jl25_app_caseeq(cmd, "playback")) {
+        if (jl25_preview_stop() != 0) {
+            MLOG_ERR("jl25 app playback preview stop fail\n");
+        }
+        jl25_app_send_simple(fd, 0, "set success.");
+    } else if (jl25_app_caseeq(cmd, "startrecord") || jl25_app_caseeq(cmd, "stoprecord") || jl25_app_caseeq(cmd, "takephoto") || jl25_app_caseeq(cmd, "snapshot")) {
+        if (jl25_app_caseeq(cmd, "startrecord")) {
+            if (jl25_capture_start_record() != 0) {
+                jl25_app_send_simple(fd, -1, "set fail.");
+                return;
+            }
+        } else if (jl25_app_caseeq(cmd, "stoprecord")) {
+            if (jl25_capture_stop_record() != 0) {
+                jl25_app_send_simple(fd, -1, "set fail.");
+                return;
+            }
+        } else if (jl25_app_caseeq(cmd, "takephoto") || jl25_app_caseeq(cmd, "snapshot")) {
+            if (jl25_capture_take_photo() != 0) {
+                jl25_app_send_simple(fd, -1, "set fail.");
+                return;
+            }
+        }
+        jl25_app_send_simple(fd, 0, "set success.");
+    } else if (jl25_app_caseeq(cmd, "sdformat")) {
+        if (jl25_storage_format_card() != 0) {
+            jl25_app_send_simple(fd, -1, "set fail.");
+            return;
+        }
+        jl25_app_send_simple(fd, 0, "set success.");
+    } else if (jl25_app_caseeq(cmd, "reset")) {
+        if (jl25_app_reset_settings() != 0) {
+            jl25_app_send_simple(fd, -1, "set fail.");
+            return;
+        }
+        jl25_app_send_simple(fd, 0, "set success.");
+    } else if (jl25_app_caseeq(cmd, "deletefile")) {
+        jl25_app_delete_file(fd, query);
+    } else if (jl25_app_caseeq(cmd, "lockvideo")) {
+        jl25_app_reject_lockvideo(fd);
+    } else if (jl25_app_caseeq(cmd, "setwifi")) {
+        MLOG_INFO("jl25 app WiFi setting rejected\n");
+        jl25_app_send_simple(fd, -1, "unsupported.");
+    } else if (jl25_app_caseeq(cmd, "setting")) {
+        jl25_app_setting(fd, query);
+    } else if (jl25_app_caseeq(cmd, "setparamvalue")) {
+        jl25_app_setparamvalue(fd, query);
+    } else if (jl25_app_caseeq(cmd, "getrecduration")) {
+        jl25_app_get_recduration(fd);
+    } else if (jl25_app_caseeq(cmd, "getlockvideostatus")) {
+        jl25_app_get_lockvideo_status(fd);
+    } else if (jl25_app_caseeq(cmd, "getparamitems")) {
+        jl25_app_get_paramitems(fd);
+    } else if (jl25_app_caseeq(cmd, "getparamvalue")) {
+        jl25_app_get_paramvalue(fd, query);
+    } else if (jl25_app_caseeq(cmd, "getadasitems")) {
+        jl25_app_get_adasitems(fd);
+    } else if (jl25_app_caseeq(cmd, "getfilelist")) {
+        jl25_app_get_filelist(fd, query);
+    } else if (jl25_app_caseeq(cmd, "getthumbnail")) {
+        jl25_app_get_thumbnail(fd, query);
+    } else if (jl25_app_caseeq(cmd, "download") || jl25_app_caseeq(cmd, "downloadfile") || jl25_app_caseeq(cmd, "getfile")) {
+        jl25_app_get_download(fd, query, request);
+    } else {
+        jl25_app_send_simple(fd, -1, "unsupported.");
+    }
+}
