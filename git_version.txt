@@ -1,0 +1,168 @@
+###############################################################################
+##################################  Cvitek  #################################
+###############################################################################
+repo: build, branch: heads/v6.3.2
+1fa6ed84241fd7b2e45ddbd87ca9de86a9c37bd2 fix: use default partition.xml when board/xxx/partition.xml does not exist efa75bad100f400d69f64392f16acf97c78b7d13 feat(panel): add new panel
+
+repo: SensorSupportList, branch: master
+207c2d59e5ee454efef3316b71999fa5669c19a8 [bugfix][186x][vi]: Fix the issue of exposure not taking effect d81064fc1ea48a3bce20d1dc01c71f20e9843c23 [bugfix](sensor): fix mis40c1 frame rate deviation
+
+repo: cnpy, branch: tpu
+05f09a5309b6ed7884af2d7274135d547ee9d84e v230 aarch64 musl 351f6a43543e83a3ca8558d261261df2449e8990 fix build warning
+
+repo: cvi_alios, branch: heads/v6.3.2
+e551492bff05b737f5ae88a2647d5d48cefc7996 fix(logo): backlight adjust & show logo slower d181b1f6c8ebafbe62b70fede922a22bbc1f7174 (af): refine af debug log [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a] :NA
+
+repo: cvi_mpi, branch: heads/v6.3.2
+10bceac4b5b2767b327384fff4beff6b6d7b71a2 (sample app):add the online lsc calibration app [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a]:NA 87696abeff74b5c263e06dacea858ad1d3a2f0e6 fix:build audio on linux by default
+
+repo: isp, branch: heads/v6.3.2
+7fe2d544d3624f03e3a19c5e3b2cbd97517281b5 (isp):isp_algo add lsc calibration algorithm [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a]:NA 913c68eadb0d7a8bd147b532acaf87543a377f6d (af): fix overexposure issues [description ]: detected AE hist error in focusing, if overexposure will reset focusing status and set AE to auto [root cause]:NA [JIRA ID]:https://jira.sophgo.com/browse/MW-97 [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a] :libaf
+
+repo: cvi_rtsp, branch: heads/v6.3.2
+b95616f234a99c6f1d597eb46987106d254da3f2 [docs](cvi_rtsp):add LICENSE and README.md [description ]:NA [root cause]:NA [JIRA ID]:https://jira.sophgo.com/browse/CV184XSDK-593 [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a] :NA 14fa4f7f7188f0769e38632fe215a5545d013854 [feat](rtsp): refine build flow [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:NA [side effects]:NA [Affected *.ko/*.so/*.a] :NA
+
+repo: fsbl, branch: heads/v6.3.2
+f03497689f4f1d466b6107028080bf406529ef78 (ddr):Fix a mistake on NY 1Gb DDR pinmux setting [description ]:A10 missed in the previous version, lead to byte1 wrlvl fail and full mem bist fail. [root cause]:NY 1Gb KGD fit [JIRA ID]:NA [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a] :NA 7e20c96ebd0666e2ce4eb2dfdf61dea4fc441ca0 fix:the offset of pkg's type
+
+repo: host-tools, branch: master
+2405b251f6aa63248b6c537a1fddf64eb550e8eb [feat](toolchain): build with gdb [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:NA [side effects]:NA [Affected *.ko/*.so/*.a] :NA d6ce22606e1882de5d38dd4cb7f2e3d2f7dd5ff7 [fix](toolchain): remove musl arm64 toolchain unnecessary bin and lib [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:NA [side effects]:NA [Affected *.ko/*.so/*.a] :NA
+
+repo: isp, branch: heads/v6.3.2
+7fe2d544d3624f03e3a19c5e3b2cbd97517281b5 (isp):isp_algo add lsc calibration algorithm [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a]:NA 913c68eadb0d7a8bd147b532acaf87543a377f6d (af): fix overexposure issues [description ]: detected AE hist error in focusing, if overexposure will reset focusing status and set AE to auto [root cause]:NA [JIRA ID]:https://jira.sophgo.com/browse/MW-97 [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a] :libaf
+
+repo: isp-tool-daemon, branch: heads/v6.3.2
+d4820b07318fe87e5c5c0e62bbbf7f72bcdeb69e [fix](isp-tool-daemon): update ldci default value [description ]:NA [root cause]:NA [JIRA ID]:CV184XSDK-873 [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a]:NA 9b1bfd12f3e07677fc4ff1e9fa3b2350af1d8688 [feat](auto_test): update api test code [description ]:NA [root cause]:NA [JIRA ID]:CV184XSDK-649 [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a] :NA
+
+repo: isp_tuning, branch: heads/v6.3.2
+b1c7f428127be9b40d77f174d01cd4c4937d37ba [fix](isp tuning): update pqjson and pqbin [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a]:NA e54cba3c1a1e8de64defb075200a733ddcfa00f4 [feat](isp tuning):add scritp to convert json to ccode [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a]:NA
+
+repo: ive, branch: heads/v6.3.2
+7e75ef64393db5613fd298e7965d56a72effed2b fix obtaining method of libtpu_kernel_module.so cd44433f9f1974b9e910ecc622282a462e4603b1 [docs](ive):add BSD 3-Clause LICENSE and README.md [description ]:NA [root cause]:NA [JIRA ID]:https://jira.sophgo.com/browse/CV184XSDK-593 [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a] :NA
+
+repo: libsophon, branch: heads/v6.3.2
+f7871998a1bfb6dce735ca849be7915e3079924d fix(bmlib): ion should be cachable, otherwise it will be slowly when access ion memory. 79afb6186163a5c9ecafb534818fcf3ebc116085 [mars3] Add tpu-runtime as a submodule
+
+repo: linux_5.10, branch: heads/v6.3.2
+c2ac18d72e0074da86a00d7edf5e5525d2ff1558 fix(dwc2): fix chg_det_fast state updates and export vbus proc e0aff5829898d6774e2d43e3c90e7383718e9411 fix(adc): change adc vref to VDD1.8A
+
+repo: mediapipe, branch: Mars3_dev
+3991467057eb0f1b40ee712611a372e40e168855 [fix](mediapipe): mediapipe add the load isp pqbin code [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a]:NA a6e61eb9e53479a9f937a654cae0e81f78e8a2cf [feat](vo):add vo_pause_chn && vo_reseume_chn cmd
+
+repo: osal, branch: heads/v6.3.2
+f88ed5c0a61043fdc17ca3e6ce4db4a3db15a9bd [feat][debug]:support dual-OS selectable printk 0d22396a4de6bb8c6de3e8e92c783f5e547e4bd4 [docs](osal):add GPL-2.0 License and README.md [description ]:NA [root cause]:NA [JIRA ID]:https://jira.sophgo.com/browse/CV184XSDK-593 [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a] :NA
+
+repo: osdrv, branch: heads/v6.3.2
+169eb43fd09b8691388ba300806eb5627c1c62c2 feat:[vi] support dynamic online/offline scaler mode switching [description ] Support dynamic switching between: - VI offline + VPSS offline - VI offline + VPSS online include Master[158094] [root cause]:NA [JIRA ID]:CV184XSDK-780 [chip project]:NA [side effects]:cv184x_vi.ko e980c5484015a93208a6d0d93ee7a212d5e928fd fix(wifi): openlog to resolve wlan0 node is missing, workaround
+
+repo: oss, branch: master
+f081db00868e7a85ac88ac4abaa9778df7ea70ff [feat](rootfs): add musl arm64 toolchain [description ]:NA [root cause]:NA [JIRA ID]:NA [chip project]:NA [side effects]:NA [Affected *.ko/*.so/*.a] :NA 4f0437b7d671962ec679a1f74ef40c079d3c8093 [fix](toolchain):change SDK_VER name [description ]:2. 64bit -> glibc_arm64 3. 32bit -> glibc_arm [root cause]:NA [JIRA ID]:NA [chip project]:cv184x [side effects]:NA [Affected *.ko/*.so/*.a] :NA
+
+repo: ramdisk, branch: heads/v6.3.2
+6d9b90f147de6e845d266b79ccbe354661ed73d5 feat(openssh): add musl_arm openssh 3fd51f95f4c007124a88b6f459d81c02ab8f60c3 (usb): Add support for umtprd, and include the umtprd.conf and binary file.
+
+repo: SensorSupportList, branch: master
+207c2d59e5ee454efef3316b71999fa5669c19a8 [bugfix][186x][vi]: Fix the issue of exposure not taking effect d81064fc1ea48a3bce20d1dc01c71f20e9843c23 [bugfix](sensor): fix mis40c1 frame rate deviation
+
+repo: sophcam, branch: remove-i2cdetect
+d5b881718a0f434dc4716c6d17db79a803720f07 fix: isolate other sensor during i2c address probe in ini2bin 2e5eb31a355396370b2db3f92a53d67e59dc5eab fix:support exfat
+
+repo: tdl_sdk, branch: golden
+7ff761d31f530116bb8f23a523fecf4ad750a584 fix regression config json 0ad699e0a4cc8664035f2502043b631905092936 [fix] change ION name which allocated by tdl
+
+repo: TPU1686, branch: master
+edf2273f0bdf5fb221fd1bf3c3497ad19d6e895c fix: lstm bf16 bug 8b641e3abca4edc5f64fe5e0a30131bdb3492a01 fix: binary_bcast
+
+repo: tracer, branch: master
+ca2cef2a7684d382bccc1c6ef43c569cc3e2ec97 [scripts] Add scripts 34e408b0d8990040f96171885692f39122498a65 [tracer] Change library name from libtracer to libcvitracer
+
+repo: u-boot-2021.10, branch: heads/v6.3.2
+5d5475a9c6789d35e0125cd5ba11bdeaa707fa54 feat: support SD burn show progress logo dc9362a6135abcf1c74c676b6d31c937008103d9 (jpeg) update dcache opration for jpeg decoder
+
+###############################################################################
+##################################  MediaSDK  #################################
+###############################################################################
+repo: sophcam, branch: remove-i2cdetect
+d5b881718a0f434dc4716c6d17db79a803720f07 fix: isolate other sensor during i2c address probe in ini2bin 2e5eb31a355396370b2db3f92a53d67e59dc5eab fix:support exfat
+
+repo: common_files, branch: master
+cd8aed2e78e7252850956de462c1e1df03c867fd chore: change date,time to commit_id 4be0f1e27f22445c11be837dcfaf4be87b8389d8 [refactor] sync log level
+
+repo: turnkey, branch: master
+cd8aed2e78e7252850956de462c1e1df03c867fd chore: change date,time to commit_id 4be0f1e27f22445c11be837dcfaf4be87b8389d8 [refactor] sync log level
+
+repo: dc309, branch: cvitek
+ee6d2a4b177b0f3ab0d191bd5a03a9f23960fe0f style:change promt 1f3871bf80bca5718dd6ee5ff737ff963c6fe848 fix: select Japanese TTS voice when system language is Japanese
+
+repo: AIsdk, branch: dc309
+efffefc59933de11c53c54f8d5966cb92ecdc945 fix: upgrade TTS model to cosyvoice-v2 for Japanese support 8728cc1f497d17246ad1c73cf122ad43319791a0 build: 规避编译路径影响产物
+
+repo: demuxer, branch: master
+00b9f2c30e1ec74d665eab2621264321a25091b3 chore: change date,time to commit_id e42b46b0bdff12c96a66cf7d1365a8f265b7256f [refactor] add FFmpeg include path
+
+repo: dtcf, branch: master
+e3d0db5fbccbe7ac3332a288448817efd3e7ce37 chore: change date,time to commit_id b3e546c19c24cb8b9a74e3047bd7ba2a282a51ea [fix]put the newest file on the head of list
+
+repo: exif, branch: master
+b099a5d3cdbcf2dfa2ae429fef473cefc1350ac6 [feat]add sample 0d3804cb4f232049dfd2cae58cece968437fac3c [fix]Remove rls_info.txt
+
+repo: file_recover, branch: master
+17ae3f0283b3e731e8199f7b7c6f50c6b676f8f3 chore: change date,time to commit_id 48a26c39b1a708d609f1373194d5731d0b0e8515 [fix]录像文件有多个缩略图，解析文件时不能只有一次
+
+repo: flash_tool, branch: master
+112c6e4f8873b05ff041fb7927343769a8770cb9 [fix]Remove rls_info.txt 75f1751a36462fbfa4d6f7393a50aaf0fb77a24e [feat]Add cmake build flow.
+
+repo: hal, branch: master
+921ef045b925d743299ca1d5893db557ea6deef1 fix:set watchdog timeout error 01b0eba3af3a13b6130abafb5129d0c53937aa30 fix: watchdog adapt to cv184x
+
+repo: ini, branch: master
+6c48b5dd95bcc3995cd9378ef1174303a7758405 [feat]add sample 7bf4683ad096c0ada39085a851c02635db1184c8 [feat]Add cmake build flow.
+
+repo: mapi, branch: master
+cf041d7c6e774e6915bcd0414298933aa55dd5af feat(vcap): 增加LSC标定与参数读写接口 3475472f674a3c5461eb7f3b8fca23534af1fbea feat(vcap): 增加防频闪参数读写接口
+
+repo: muxer, branch: master
+555051681e4bfd964eb0c9b10eb2fead754965b2 fix: avoid non-monotonically increasing dts in audio muxing aae902fbb36d8aa3871e4ec686b4993ce031f5d5 fix: timebase and log
+
+repo: osal, branch: master
+00f3bc3f666384f57fe2cfeb2212f885d5ff572f [fix](warning) build warning, size not match d78a9f40c8e0735d70ed7dbfbca5eb3879fc9104 [fix]for arm-none-linux-musleabihf-
+
+repo: perf, branch: master
+fe87dac5612ae918042b1b07ab02dbc6c16c13d5 [feat]Add cmake build flow. 305df3194a4e7d41c63263dd7d5c5b8cae492f29 Desensitization of component content and removal of CVI field content
+
+repo: player, branch: master
+7d0374f3142825b22511a4375a85040f8de36ff5 chore: change date,time to commit_id 95d95b318910b5032bdf8d4a9a60cc136b2d1c96 fix(cmake): 为player库补充FFmpeg所需宏定义
+
+repo: recorder, branch: master
+81ee1110186e520df74ac13af165cdb35b9bfe52 for recorder time version 0b615c5375acc9ce9841e5be4ec65f7e860e2802 fix:outcnt is error when enable_emrfile_from_normfile
+
+repo: ringbuffer, branch: master
+d416f3b3c70a2b126d4efe58ccce86572bbc68e7 chore: change date,time to commit_id c440e79e058d34b695898ebf6937eb5bdf0aad5c fix:add RBUF_Unused to log and some comments
+
+repo: rtsp, branch: master
+163e01e0f0f71738af91036bddfa8f0e664445d7 chore: change date,time to commit_id f6a7426e275080dd482be7c33647e09a3b330c4b [fix]Resolve the deadlock issue caused by send blocking due to abnormal RTSP exit.
+
+repo: storage, branch: master
+7776af73b8903405a5de1e1f95d5aff00bcbb5ab fix(stg): 修正文件系统类型判断逻辑 d52e93c228db62c76b93bf33c3e4e60e7912ef98 chore: change date,time to commit_id
+
+repo: sysutils, branch: master
+b9c15115ff26cd0f05e2ab5645417a883be99e90 [refactor] using CVI_LOGX instead of printf 3e2e83c9a0d4bf45d54a810a1ab6800f42c850c1 [feat]add sample
+
+repo: thumbnail_extractor, branch: master
+0456358099a89a42e0fcacf6acdf00f0ff48cc5e chore: change date,time to commit_id 0dca4dd7487aee20f80a754caa2823bb708ba991 [feat]support generate subpic from subvideo
+
+repo: upgrade, branch: master
+d2cdfece8b75c0691fdaa4b2a73e5ac7bcc00370 chore: change date,time to commit_id c6e4f642c276898bcc4c349a528ba57af8a00713 [feat]Add cmake build flow.
+
+repo: awtkcode, branch: framework
+4a49328ea559d672de0c79ab92d9718ad0ca3cb7 [feat]fb enable tde b59fd2639cccd11e6dcfa8d8174adf37db8ed476 awtk for mars3
+
+repo: ffmpeg, branch: framework
+a45854861fd10cda0df39c1d21c3f166ba9b2dd4 [feat] add flush moov box for mp4 files 87752578fa89fd70a3ca5d67f27efc1689f9e034 [feat] sync from cardv projec.
+
+repo: lvgl, branch: release/v9.3
+9f27e0a51e80430f1491b0e0cac4a07eb3995b58 [clena] rm lv_conf.h 34da7d978572cf3ed9a481ceba55647d3f8a9a28 [feat] add lv_conf.h for cardv
+
+repo: thttpd, branch: framework
+1b660b0b05c1f8f3c0d450e13bb82cc0f46da890 [style]delete cvi for thttpd 47d97960fdeb627eb6f97c86f4c049dd1a3afa77 By default, open the mime_ encodings. h and mime_ types. h files
+
