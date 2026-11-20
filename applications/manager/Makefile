@@ -11,6 +11,10 @@ SDIR		:= $(CURDIR)/src
 SRCS_C		:= $(SDIR)/vol/volmng.c
 # endif
 SRCS_C		+= $(SDIR)/appcomm/appcomm.c
+ifeq ($(CONFIG_PT100_MOTOR), y)
+SRCS_C          += $(SDIR)/motor/motormng.c
+SRCS_C          += $(SDIR)/motor/motor_hw.c
+endif
 SRCS_C		+= $(SDIR)/caminfo/caminfomng.c
 ifeq ($(CONFIG_SERVICES_VIDEO_MD), y)
 SRCS_C		+= $(SDIR)/md/mdmng.c
@@ -118,6 +122,11 @@ CFLAGS += -Wno-stringop-truncation -Wno-format-truncation \
 CFLAGS += $(KBUILD_DEFINES)
 CXXFLAGS += $(KBUILD_DEFINES)
 include $(COMMON_DIR)/common_lib.mk
+
+ifeq ($(CONFIG_PT100_MOTOR), y)
+$(ODIR)/motor/motormng.$(TARGET_MACHINE).o: $(CURDIR)/include/motormng.h $(SDIR)/motor/motor_hw.h
+$(ODIR)/motor/motor_hw.$(TARGET_MACHINE).o: $(SDIR)/motor/motor_hw.h
+endif
 
 clean:
 	$(call print_target)

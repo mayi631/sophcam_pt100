@@ -2,6 +2,10 @@
 # Kbuild for framework
 #
 
+ifeq ($(CONFIG_PT100_MOTOR), y)
+	KBUILD_DEFINES += -DPT100_MOTOR_ON
+endif
+
 ifeq ($(CONFIG_APP_DASHCAM), y)
 	KBUILD_DEFINES += -DPDT_DASHCAM
 	CFG_PDT := dashcam

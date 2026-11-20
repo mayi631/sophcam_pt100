@@ -6,6 +6,7 @@
 #
 # Application Configuration
 #
+CONFIG_PT100_MOTOR=y
 
 #
 # AHD Configuration

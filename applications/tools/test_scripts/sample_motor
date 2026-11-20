@@ -1,0 +1,337 @@
+#!/bin/sh
+
+usage() {
+    echo "Usage: sh $0 [start [200..510] [forward|reverse]|speed 200..510|stop|status|probe|help]"
+    echo "No arguments: START CH12 forward, 150 mA amplitude ESTIMATE, ramp 200 -> 510 pps."
+    echo "Standalone shell: requires root and BusyBox devmem/i2ctransfer/flock/setsid/usleep."
+    echo "No pt100_motor executable, compilation, firmware API or MCU required."
+    echo "No timed automatic stop; closing the terminal does NOT stop the motor."
+    echo "Stop explicitly: sh $0 stop"
+}
+
+die() {
+    echo "sample_motor: $*" >&2
+    [ "$touched" = 0 ] || faulted=1
+    exit 1
+}
+
+valid_speed() {
+    case "$1" in
+        [0-9][0-9][0-9]) [ "$1" -ge 200 ] && [ "$1" -le 510 ] ;;
+        *) return 1 ;;
+    esac
+}
+
+read_register() {
+    register_raw=$(i2ctransfer -y 0 w1@0x56 "$1" r1) || return 1
+    case "$register_raw" in
+        0x[0-9a-fA-F][0-9a-fA-F]) register_value=$((register_raw)) ;;
+        *) echo "Invalid I2C response: $register_raw" >&2; return 1 ;;
+    esac
+}
+
+write_register() {
+    if [ "$3" = 2 ]; then
+        i2ctransfer -y 0 w3@0x56 "$1" "$(($2 & 255))" "$(($2 >> 8))" >/dev/null
+    else
+        i2ctransfer -y 0 w2@0x56 "$1" "$2" >/dev/null
+    fi
+}
+
+write_checked() {
+    check_address=$1 check_expected=$2 check_width=$3 check_offset=0
+    write_register "$check_address" "$check_expected" "$check_width" || return 1
+    while [ "$check_offset" -lt "$check_width" ]; do
+        read_register "$((check_address + check_offset))" || return 1
+        if [ "$register_value" -ne "$(((check_expected >> (8 * check_offset)) & 255))" ]; then
+            echo "Register $((check_address + check_offset)) readback mismatch" >&2
+            return 1
+        fi
+        check_offset=$((check_offset + 1))
+    done
+}
+
+read_memory() {
+    memory_raw=$(devmem "$1" 32) || return 1
+    memory_digits=${memory_raw#0x}
+    case "$memory_raw" in 0x?*) ;; *) return 1 ;; esac
+    case "$memory_digits" in *[!0-9a-fA-F]*) return 1 ;; esac
+    [ "${#memory_digits}" -le 8 ] || return 1
+    memory_value=$((memory_raw))
+}
+
+set_enable() {
+    read_memory 0x05021000 || return 1
+    devmem 0x05021000 32 "$(((memory_value & ~16) | $1))" >/dev/null || return 1
+    read_memory 0x05021000 || return 1
+    [ "$((memory_value & 16))" -eq "$1" ]
+}
+
+publish_state() {
+    echo "$1" >"$state_dir/state.tmp" && mv "$state_dir/state.tmp" "$state_dir/state"
+}
+
+cleanup() {
+    cleanup_result=$?
+    trap - 0 INT TERM
+    cleanup_failed=0
+    if [ "$touched" = 1 ]; then
+        write_checked 0x22 0x80 1 || cleanup_failed=1
+        write_checked 0x20 0x07 1 || cleanup_failed=1
+    fi
+    if [ "$global_saved" = 1 ] && [ "$faulted" = 0 ] && [ "$cleanup_failed" = 0 ]; then
+        write_checked 0x02 "$original_global" 1 || cleanup_failed=1
+    fi
+    if [ "$enable_saved" = 1 ]; then
+        if [ "$faulted" = 1 ] || [ "$cleanup_failed" = 1 ]; then
+            set_enable 0 || cleanup_failed=1
+        else
+            set_enable "$original_enable" || cleanup_failed=1
+        fi
+    fi
+    if [ "$cleanup_failed" = 1 ]; then
+        [ "$enable_saved" = 0 ] || set_enable 0
+        echo "STOP/restore failed. Cut motor power if coil release cannot be confirmed!" >&2
+        cleanup_result=1
+    fi
+    if [ "$worker" = 1 ]; then
+        rm -f "$state_dir/ready" "$state_dir/pid"
+        if [ "$cleanup_result" = 0 ]; then
+            publish_state stopped || cleanup_result=1
+        else
+            publish_state failed
+        fi
+    fi
+    exit "$cleanup_result"
+}
+
+open_hardware() {
+    trap cleanup 0
+    trap 'faulted=1; exit 130' INT
+    trap 'faulted=1; exit 143' TERM
+    read_memory 0x03001088 || die "Cannot read MOT_EN pinmux"
+    [ "$((memory_value & 7))" -eq 3 ] || die "MOT_EN is not PWR_GPIO4; refusing to change pinmux"
+    read_memory 0x05021004 || die "Cannot read GPIO direction"
+    [ "$((memory_value & 16))" -ne 0 ] || die "MOT_EN is not an output"
+    read_memory 0x05021000 || die "Cannot read MOT_EN"
+    original_enable=$((memory_value & 16)) enable_saved=1
+    set_enable 16 || die "Cannot enable motor IC"
+    usleep 20000 || die "Cannot wait for motor IC"
+    read_register 0x00 || die "Cannot read motor ID0"
+    [ "$register_value" -eq 129 ] || die "Unexpected motor ID0"
+    read_register 0x01 || die "Cannot read motor ID1"
+    [ "$register_value" -eq 108 ] || die "Unexpected motor ID1"
+    echo "TMI8160I ID 0x6c81; I2C0 @ 0x56; CH12"
+    for idle_address in 0x10 0x20 0x40; do
+        read_register "$idle_address" || die "Cannot check output ownership"
+        [ "$((register_value & 128))" -eq 0 ] || die "An output is enabled; refusing to take over"
+    done
+    read_register 0x04 || die "Cannot read IC status"
+    [ "$((register_value & 240))" -eq 144 ] || die "IC reset/sleep/thermal/clock fault"
+}
+
+read_clock() {
+    read -r clock_uptime clock_unused </proc/uptime || return 1
+    clock_seconds=${clock_uptime%.*} clock_fraction=${clock_uptime#*.}
+    case "$clock_seconds" in ''|*[!0-9]*) return 1 ;; esac
+    case "$clock_fraction" in [0-9][0-9]) ;; *) return 1 ;; esac
+    clock_cs=$((clock_seconds * 100 + 100$clock_fraction - 10000))
+}
+
+set_speed() {
+    speed_divider=$(((437500 + $1 - 1) / $1))
+    write_checked 0x26 "$speed_divider" 2
+}
+
+publish_status() {
+    printf 'CH12 %s; commanded=%s pps; target=%s pps; AGC=0x20 (150 mA ESTIMATE)\n' \
+        "$direction" "$current_pps" "$target_pps" >"$state_dir/status.tmp" &&
+        mv "$state_dir/status.tmp" "$state_dir/status"
+}
+
+run_worker() {
+    worker=1
+    trap cleanup 0
+    trap '' HUP
+    trap 'faulted=1; exit 130' INT
+    trap 'faulted=1; exit 143' TERM
+    flock -n 9 || die "Worker did not inherit the hardware lock"
+    echo "$$" >"$state_dir/pid" || die "Cannot publish PID"
+    [ ! -e "$state_dir/stop" ] || exit 0
+    open_hardware
+    read_register 0x02 || die "Cannot save global control"
+    original_global=$register_value global_saved=1 touched=1
+    write_checked 0x22 0x80 1 && write_checked 0x20 0x07 1 &&
+        write_checked 0x02 0x82 1 && write_checked 0x25 0x20 1 &&
+        write_checked 0x23 0 1 && write_checked 0x24 0 1 && set_speed 200 &&
+        write_checked 0x28 0 2 && write_checked 0x2a 0 2 &&
+        write_checked 0x2c 0 2 && write_checked 0x2e 65535 2 &&
+        write_checked 0x02 0x8a 1 && write_checked 0x20 0x87 1 || die "Configuration failed"
+    [ ! -e "$state_dir/stop" ] || exit 0
+    if [ "$direction" = reverse ]; then drive=0x82; else drive=0x81; fi
+    write_checked 0x22 "$drive" 1 || die "Cannot start motor"
+    current_pps=200
+    read_clock || die "Cannot read monotonic clock"
+    previous_cs=$clock_cs refresh_cs=$clock_cs
+    publish_status && publish_state running &&
+        echo ready >"$state_dir/ready" || die "Cannot publish startup result"
+    while [ ! -e "$state_dir/stop" ]; do
+        read -r target_pps <"$state_dir/target" && valid_speed "$target_pps" || die "Invalid speed request"
+        read_clock || die "Cannot read monotonic clock"
+        ramp_step=$((clock_cs - previous_cs)) previous_cs=$clock_cs
+        [ "$ramp_step" -ge 0 ] || die "Monotonic clock moved backwards"
+        [ "$ramp_step" -le 10 ] || ramp_step=10
+        next_pps=$current_pps
+        if [ "$current_pps" -lt "$target_pps" ]; then
+            next_pps=$((current_pps + ramp_step))
+            [ "$next_pps" -le "$target_pps" ] || next_pps=$target_pps
+        elif [ "$current_pps" -gt "$target_pps" ]; then
+            next_pps=$((current_pps - ramp_step))
+            [ "$next_pps" -ge "$target_pps" ] || next_pps=$target_pps
+        fi
+        if [ "$next_pps" -ne "$current_pps" ]; then
+            set_speed "$next_pps" || die "Speed write failed"
+            current_pps=$next_pps
+        fi
+        read_register 0x04 || die "Cannot read IC status"
+        [ "$((register_value & 240))" -eq 144 ] || die "IC reset/sleep/thermal/clock fault"
+        read_register 0x21 || die "Cannot read CH12 status"
+        [ "$((register_value & 1))" -eq 0 ] || die "Unexpected hardware motion end"
+        read_memory 0x05021000 || die "Cannot check MOT_EN"
+        [ "$((memory_value & 16))" -ne 0 ] || die "MOT_EN dropped; check camera-reset conflict"
+        if [ "$((clock_cs - refresh_cs))" -ge 100 ]; then
+            write_register 0x2a 0 2 && read_register 0x2b || die "Cycle refresh failed"
+            [ "$register_value" -lt 2 ] || die "Cycle refresh readback failed"
+            refresh_cs=$clock_cs
+        fi
+        publish_status || die "Cannot publish speed status"
+        usleep 100000 || die "Polling wait failed"
+    done
+}
+
+lock_hardware() {
+    [ ! -L /tmp/pt100-motor.lock ] || die "Unsafe hardware lock symlink"
+    exec 9>/tmp/pt100-motor.lock
+    flock -n 9 || die "Motor busy: firmware API or another motor test owns the IC"
+}
+
+session_alive() {
+    [ -f "$state_dir/pid" ] && read -r session_pid <"$state_dir/pid" || return 1
+    case "$session_pid" in ''|*[!0-9]*) return 1 ;; esac
+    [ "$session_pid" -gt 1 ] && kill -0 "$session_pid" 2>/dev/null
+}
+
+action=${1:-start}
+[ "$#" -eq 0 ] || shift
+touched=0 faulted=0 global_saved=0 enable_saved=0 worker=0
+case "$action" in
+    help|-h|--help) [ "$#" -eq 0 ] || exit 1; usage; exit 0 ;;
+    start|_worker)
+        [ "$#" -le 2 ] || { usage >&2; exit 1; }
+        target_pps=${1:-510} direction=${2:-forward}
+        valid_speed "$target_pps" || die "Speed must be 200..510 pps"
+        case "$direction" in forward|reverse) ;; *) die "Direction must be forward or reverse" ;; esac
+        ;;
+    speed) [ "$#" -eq 1 ] && valid_speed "$1" || die "Speed must be 200..510 pps"; target_pps=$1 ;;
+    stop|status|probe) [ "$#" -eq 0 ] || { usage >&2; exit 1; } ;;
+    *) usage >&2; exit 1 ;;
+esac
+
+[ "$(id -u)" = 0 ] || die "Run as root on the board"
+umask 077
+for utility in devmem i2ctransfer flock setsid usleep readlink mkdir chmod mv rm cat; do
+    command -v "$utility" >/dev/null 2>&1 || die "Missing system utility: $utility (BusyBox)"
+done
+state_dir=${SAMPLE_MOTOR_STATE_DIR:-/tmp/sample-motor}
+case "$state_dir" in /*) ;; *) die "State directory must be an absolute path" ;; esac
+[ ! -L "$state_dir" ] || die "Unsafe state directory symlink"
+if ! mkdir -m 700 "$state_dir" 2>/dev/null; then
+    [ -d "$state_dir" ] && [ -O "$state_dir" ] || die "Unsafe state directory owner/type"
+    chmod 700 "$state_dir" || die "Cannot protect state directory"
+fi
+export SAMPLE_MOTOR_STATE_DIR="$state_dir"
+if [ "$action" = _worker ]; then
+    run_worker
+    exit 0
+fi
+exec 8>"$state_dir/control.lock"
+flock -n 8 || die "Another sample_motor command is in progress; retry after it returns"
+
+case "$action" in
+    start)
+        lock_hardware
+        script_path=$(readlink -f "$0") || die "Cannot resolve script path"
+        rm -f "$state_dir/stop" "$state_dir/ready" "$state_dir/pid"
+        echo "$target_pps" >"$state_dir/target" && publish_state starting || die "Cannot prepare startup"
+        echo "CH12 $direction; 150 mA ESTIMATE (AGC 0x20); 200 -> $target_pps pps, <=100 pps/s."
+        echo "No timed stop. Monitor heat and travel; stop with: sh $0 stop"
+        echo "No phase-current, rotor-speed or motor-temperature feedback. Do not run camera resets."
+        (
+            trap '' HUP
+            exec 8>&-
+            exec setsid sh "$script_path" _worker "$target_pps" "$direction"
+        ) </dev/null >"$state_dir/motor.log" 2>&1 &
+        exec 9>&-
+        trap 'echo stop >"$state_dir/stop"; exit 130' HUP INT TERM
+        startup_wait=0
+        while [ "$startup_wait" -lt 100 ]; do
+            read -r motor_state <"$state_dir/state" || motor_state=failed
+            if [ "$motor_state" = running ] && [ -e "$state_dir/ready" ]; then
+                echo "Started in background (not rotor feedback). Log: $state_dir/motor.log"
+                exit 0
+            fi
+            case "$motor_state" in failed|stopped) cat "$state_dir/motor.log" >&2; exit 1 ;; esac
+            usleep 100000 || break
+            startup_wait=$((startup_wait + 1))
+        done
+        echo stop >"$state_dir/stop"
+        die "Startup confirmation timed out; stop requested. Inspect $state_dir/motor.log and verify coil release"
+        ;;
+    speed)
+        [ -e "$state_dir/ready" ] && [ ! -e "$state_dir/stop" ] || die "No running sample_motor"
+        read -r motor_state <"$state_dir/state" && [ "$motor_state" = running ] || die "No running sample_motor"
+        session_alive || die "Worker missing; verify coil release and power-cycle before restarting"
+        echo "$target_pps" >"$state_dir/target.tmp" && mv "$state_dir/target.tmp" "$state_dir/target" || die "Cannot queue speed"
+        echo "Target $target_pps pps queued; ramp <=100 pps/s. Use status to check commanded speed."
+        ;;
+    stop)
+        if [ ! -f "$state_dir/state" ]; then echo "No sample_motor session"; exit 0; fi
+        read -r motor_state <"$state_dir/state" || die "Cannot read session state"
+        case "$motor_state" in
+            stopped) echo "Already stopped"; exit 0 ;;
+            failed) die "Previous worker failed; inspect $state_dir/motor.log and verify coil release" ;;
+        esac
+        session_alive || die "Worker missing; cannot confirm coil release. Cut motor power if necessary"
+        echo stop >"$state_dir/stop" || die "Cannot request stop"
+        stop_wait=0
+        while [ "$stop_wait" -lt 100 ]; do
+            read -r motor_state <"$state_dir/state" || motor_state=failed
+            case "$motor_state" in
+                stopped) echo "Stopped; CH12 coils released"; exit 0 ;;
+                failed) die "Stop failed; inspect $state_dir/motor.log and cut motor power if necessary" ;;
+            esac
+            usleep 100000 || break
+            stop_wait=$((stop_wait + 1))
+        done
+        die "No stop confirmation. Inspect $state_dir/motor.log; cut motor power if coil release is uncertain"
+        ;;
+    status)
+        if [ -f "$state_dir/state" ]; then
+            cat "$state_dir/state"
+            [ ! -f "$state_dir/status" ] || cat "$state_dir/status"
+            echo "Log: $state_dir/motor.log"
+            read -r motor_state <"$state_dir/state" || exit 1
+            case "$motor_state" in
+                running|starting) session_alive || die "Worker missing; status is stale. Verify coil release" ;;
+            esac
+        else echo "No sample_motor session"; fi
+        ;;
+    probe)
+        lock_hardware
+        open_hardware
+        for probe_address in 0x02 0x04 0x10 0x20 0x21 0x22 0x25 0x26 0x27 0x40 0x42; do
+            read_register "$probe_address" || die "Probe read failed"
+            printf '%s = 0x%02x\n' "$probe_address" "$register_value"
+        done
+        ;;
+esac

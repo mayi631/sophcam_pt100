@@ -84,6 +84,9 @@ ifeq ($(findstring riscv64, $(CONFIG_CROSS_COMPILE)), riscv64)
 LIBS            += -L$(CSI2D_DIR)/lib -lcsi2d
 endif
 LIBS			+= -L$(MANAGEER_DIR)/lib -lapp_mng
+ifeq ($(CONFIG_PT100_MOTOR), y)
+ELFFLAGS        += -Wl,--undefined=MOTORMNG_Init
+endif
 LIBS			+= -L$(APP_SERVICE_DIR)/lib -lapp_service
 LIBS			+= -L$(MAPI_DIR)/lib -lcomp_mapi
 LIBS			+= -L$(HAL_DIR)/lib -lcomp_hal
@@ -226,6 +229,10 @@ CFLAGS += $(KBUILD_DEFINES)
 CXXFLAGS += $(KBUILD_DEFINES)
 
 include $(COMMON_DIR)/common_lib.mk
+
+ifeq ($(CONFIG_PT100_MOTOR), y)
+$(TARGET): $(MANAGEER_DIR)/lib/libapp_mng.a
+endif
 
 clean:
 	$(call print_target)

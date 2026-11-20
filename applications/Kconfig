@@ -1,5 +1,12 @@
 menu "Application Configuration"
 
+config PT100_MOTOR
+	bool "PT100 SM10 / TMI8160I embedded motor API"
+	default n
+	help
+	  Link the in-process motor manager into the firmware application.
+	  Explicit initialization/start is required; no boot-time motor motion.
+
 menu "AHD Configuration"
 config RESET_MODE_AHD_HOTPLUG
 bool "Reset Mode After AHD Hotplug"
