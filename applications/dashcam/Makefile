@@ -87,6 +87,9 @@ LIBS			+= -L$(MANAGEER_DIR)/lib -lapp_mng
 ifeq ($(CONFIG_PT100_MOTOR), y)
 ELFFLAGS        += -Wl,--undefined=MOTORMNG_Init
 endif
+ifeq ($(CONFIG_PT100_PRINT), y)
+ELFFLAGS        += -Wl,--undefined=PRINTMNG_Init
+endif
 LIBS			+= -L$(APP_SERVICE_DIR)/lib -lapp_service
 LIBS			+= -L$(MAPI_DIR)/lib -lcomp_mapi
 LIBS			+= -L$(HAL_DIR)/lib -lcomp_hal

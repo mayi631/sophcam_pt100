@@ -15,6 +15,9 @@ SUBDIRS		+= cc_tools
 SUBDIRS		+= test_scripts
 # endif
 SUBDIRS		+= bmp2bitmap
+ifeq ($(CONFIG_PT100_PRINT), y)
+SUBDIRS         += sample_print
+endif
 
 $(TOPTARGETS): $(SUBDIRS)
 $(SUBDIRS):

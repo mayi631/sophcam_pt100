@@ -13,5 +13,6 @@ $(SUBDIRS):
 
 # 依赖关系
 dashcam: manager
+tools: manager
 
 .PHONY: $(TOPTARGETS) $(SUBDIRS)

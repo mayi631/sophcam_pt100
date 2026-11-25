@@ -7,6 +7,14 @@ config PT100_MOTOR
 	  Link the in-process motor manager into the firmware application.
 	  Explicit initialization/start is required; no boot-time motor motion.
 
+config PT100_PRINT
+	bool "PT100 simulated printing manager and printhead backend API"
+	depends on PT100_MOTOR
+	default y
+	help
+	  Link the asynchronous printing manager and build sample_print.
+	  Default mode is hardware-free simulation. No boot-time printing.
+
 menu "AHD Configuration"
 config RESET_MODE_AHD_HOTPLUG
 bool "Reset Mode After AHD Hotplug"

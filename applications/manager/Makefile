@@ -15,6 +15,10 @@ ifeq ($(CONFIG_PT100_MOTOR), y)
 SRCS_C          += $(SDIR)/motor/motormng.c
 SRCS_C          += $(SDIR)/motor/motor_hw.c
 endif
+ifeq ($(CONFIG_PT100_PRINT), y)
+SRCS_C          += $(SDIR)/print/printmng.c
+SRCS_C          += $(SDIR)/print/print_motor.c
+endif
 SRCS_C		+= $(SDIR)/caminfo/caminfomng.c
 ifeq ($(CONFIG_SERVICES_VIDEO_MD), y)
 SRCS_C		+= $(SDIR)/md/mdmng.c
@@ -126,6 +130,9 @@ include $(COMMON_DIR)/common_lib.mk
 ifeq ($(CONFIG_PT100_MOTOR), y)
 $(ODIR)/motor/motormng.$(TARGET_MACHINE).o: $(CURDIR)/include/motormng.h $(SDIR)/motor/motor_hw.h
 $(ODIR)/motor/motor_hw.$(TARGET_MACHINE).o: $(SDIR)/motor/motor_hw.h
+endif
+ifeq ($(CONFIG_PT100_PRINT), y)
+$(ODIR)/print/printmng.$(TARGET_MACHINE).o $(ODIR)/print/print_motor.$(TARGET_MACHINE).o: $(CURDIR)/include/printmng.h $(CURDIR)/include/motormng.h $(SDIR)/print/print_motor.h
 endif
 
 clean:
