@@ -1,4 +1,5 @@
 #define DEBUG
+#include "ui_layout.h"
 #include "gui_guider.h"
 #include "lvgl.h"
 #include "style_common.h"
@@ -239,8 +240,8 @@ static void update_buttons_state(void)
         lv_obj_clear_flag(lines[3], LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(lines[4], LV_OBJ_FLAG_HIDDEN);
 
-        lv_obj_align(buttons[3].btn, LV_ALIGN_TOP_MID, 0, (MENU_BTN_SIZE + 10) * 3);
-        lv_obj_align(buttons[4].btn, LV_ALIGN_TOP_MID, 0, (MENU_BTN_SIZE + 10) * 4);
+        lv_obj_align(buttons[3].btn, LV_ALIGN_TOP_MID, 0, UI_Y((MENU_BTN_SIZE + 10) * 3));
+        lv_obj_align(buttons[4].btn, LV_ALIGN_TOP_MID, 0, UI_Y((MENU_BTN_SIZE + 10) * 4));
         //设置模式
         setgraphy_mode_Index(1);
         //更新文本
@@ -260,8 +261,8 @@ static void update_buttons_state(void)
         lv_obj_add_flag(lines[4], LV_OBJ_FLAG_HIDDEN);
 
         // 移动时间间隔和拍照张数按钮回原来的位置
-        lv_obj_align(buttons[3].btn, LV_ALIGN_TOP_MID, 0, (MENU_BTN_SIZE + 10) * 1);
-        lv_obj_align(buttons[4].btn, LV_ALIGN_TOP_MID, 0, (MENU_BTN_SIZE + 10) * 2);
+        lv_obj_align(buttons[3].btn, LV_ALIGN_TOP_MID, 0, UI_Y((MENU_BTN_SIZE + 10) * 1));
+        lv_obj_align(buttons[4].btn, LV_ALIGN_TOP_MID, 0, UI_Y((MENU_BTN_SIZE + 10) * 2));
         //使用定时拍摄，就把设置时间标志置0，设置完成再1
         start_time_set = false;
         end_time_set = false;
@@ -322,15 +323,15 @@ static void shot_count_set_event_handler(lv_event_t *e)
         delete_kb_ta_cb();//先删除再创建
         // 创建数字键盘
         kb_input = lv_keyboard_create(obj_Vedio_TimeLapse_s);
-        lv_obj_set_size(kb_input, 640, 240);
+        lv_obj_set_size(kb_input, UI_X(640), UI_Y(240));
         lv_obj_align(kb_input, LV_ALIGN_BOTTOM_MID, 0, 0);
         // 设置为数字键盘模式
         lv_keyboard_set_mode(kb_input, LV_KEYBOARD_MODE_NUMBER);
 
         // 创建文本区域
         ta_input = lv_textarea_create(obj_Vedio_TimeLapse_s);
-        lv_obj_set_size(ta_input, 300, 50);
-        lv_obj_align(ta_input, LV_ALIGN_TOP_MID, 0, 50);
+        lv_obj_set_size(ta_input, UI_X(300), UI_Y(50));
+        lv_obj_align(ta_input, LV_ALIGN_TOP_MID, 0, UI_Y(50));
         lv_textarea_set_text(ta_input, shot_count_label);
         lv_textarea_set_one_line(ta_input, true);
         lv_textarea_set_max_length(ta_input, 5); // 最大5位数
@@ -528,7 +529,7 @@ void vedioTimeLapse_Scroll_Floating_Create(uint8_t index)
     // 创建浮动窗口
     Floating_Win_s = lv_obj_create(obj_Vedio_TimeLapse_s);
     lv_obj_remove_style_all(Floating_Win_s);
-    lv_obj_set_size(Floating_Win_s, 500, 300); // 更紧凑的尺寸
+    lv_obj_set_size(Floating_Win_s, UI_X(500), UI_Y(300)); // 更紧凑的尺寸
     lv_obj_align(Floating_Win_s, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_bg_opa(Floating_Win_s, LV_OPA_100, LV_PART_MAIN);
     lv_obj_set_style_bg_color(Floating_Win_s, lv_color_hex(0x1A1A1A), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -545,13 +546,13 @@ void vedioTimeLapse_Scroll_Floating_Create(uint8_t index)
     lv_label_set_text(title_label, str_language_time_settings[get_curr_language()]);
     lv_obj_set_style_text_font(title_label, get_usr_fonts(ALI_PUHUITI_FONTPATH, MENU_FONT_SIZE), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(title_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, 15);
+    lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, UI_Y(15));
 
     // 创建小时滚轮容器
     lv_obj_t *hour_cont = lv_obj_create(Floating_Win_s);
     lv_obj_remove_style_all(hour_cont);
-    lv_obj_set_size(hour_cont, 100, 160);
-    lv_obj_align(hour_cont, LV_ALIGN_CENTER, -70, -10);
+    lv_obj_set_size(hour_cont, UI_X(100), UI_Y(160));
+    lv_obj_align(hour_cont, LV_ALIGN_CENTER, UI_X(-70), UI_Y(-10));
     lv_obj_set_style_bg_opa(hour_cont, LV_OPA_0, LV_PART_MAIN);
 
     // 创建小时标签
@@ -577,7 +578,7 @@ void vedioTimeLapse_Scroll_Floating_Create(uint8_t index)
             LV_ROLLER_MODE_INFINITE);
             lv_label_set_text(hour_label, str_language_minute_1[get_curr_language()]);
     }
-    lv_obj_set_size(roller_hour_s, 100, 120);
+    lv_obj_set_size(roller_hour_s, UI_X(100), UI_Y(120));
     lv_obj_set_style_text_font(roller_hour_s, get_usr_fonts(ALI_PUHUITI_FONTPATH, 28), 0);
     lv_obj_set_style_bg_color(roller_hour_s, lv_color_hex(0), LV_PART_MAIN);
     lv_obj_set_style_bg_color(roller_hour_s, lv_color_hex(0x404040), LV_PART_SELECTED);
@@ -591,13 +592,13 @@ void vedioTimeLapse_Scroll_Floating_Create(uint8_t index)
     lv_label_set_text(colon, ":");
     lv_obj_set_style_text_font(colon, get_usr_fonts(ALI_PUHUITI_FONTPATH, 32), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(colon, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(colon, LV_ALIGN_CENTER, 0, -20);
+    lv_obj_align(colon, LV_ALIGN_CENTER, 0, UI_Y(-20));
 
     // 创建分钟滚轮容器
     lv_obj_t *min_cont = lv_obj_create(Floating_Win_s);
     lv_obj_remove_style_all(min_cont);
-    lv_obj_set_size(min_cont, 100, 160);
-    lv_obj_align(min_cont, LV_ALIGN_CENTER, 70, -10);
+    lv_obj_set_size(min_cont, UI_X(100), UI_Y(160));
+    lv_obj_align(min_cont, LV_ALIGN_CENTER, UI_X(70), UI_Y(-10));
     lv_obj_set_style_bg_opa(min_cont, LV_OPA_0, LV_PART_MAIN);
 
     // 创建分钟标签
@@ -619,7 +620,7 @@ void vedioTimeLapse_Scroll_Floating_Create(uint8_t index)
                           "23\n24\n25\n26\n27\n28\n29\n30\n31\n32\n33\n34\n35\n36\n37\n38\n39\n40\n41\n42\n43\n44\n45\n"
                           "46\n47\n48\n49\n50\n51\n52\n53\n54\n55\n56\n57\n58\n59",
                           LV_ROLLER_MODE_INFINITE);
-    lv_obj_set_size(roller_min_s, 100, 120);
+    lv_obj_set_size(roller_min_s, UI_X(100), UI_Y(120));
     lv_obj_set_style_text_font(roller_min_s, get_usr_fonts(ALI_PUHUITI_FONTPATH, 28), 0);
     lv_obj_set_style_bg_color(roller_min_s, lv_color_hex(0), LV_PART_MAIN);
     lv_obj_set_style_bg_color(roller_min_s, lv_color_hex(0x404040), LV_PART_SELECTED);
@@ -631,7 +632,7 @@ void vedioTimeLapse_Scroll_Floating_Create(uint8_t index)
     // 创建按钮容器
     lv_obj_t *btn_cont = lv_obj_create(Floating_Win_s);
     lv_obj_remove_style_all(btn_cont);
-    lv_obj_set_size(btn_cont, 400, 60);
+    lv_obj_set_size(btn_cont, UI_X(400), UI_Y(60));
     lv_obj_align(btn_cont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_flex_flow(btn_cont, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(btn_cont, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
@@ -641,7 +642,7 @@ void vedioTimeLapse_Scroll_Floating_Create(uint8_t index)
 
     // 创建取消按钮
     lv_obj_t *btn_cancel = lv_btn_create(btn_cont);
-    lv_obj_set_size(btn_cancel, 150, 50);
+    lv_obj_set_size(btn_cancel, UI_X(150), UI_Y(50));
     lv_obj_set_style_bg_color(btn_cancel, lv_color_hex(0x404040), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(btn_cancel, lv_color_hex(0x505050), LV_PART_MAIN | LV_STATE_PRESSED);
     lv_obj_set_style_radius(btn_cancel, 15, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -658,7 +659,7 @@ void vedioTimeLapse_Scroll_Floating_Create(uint8_t index)
 
     // 创建确定按钮
     lv_obj_t *btn_ok = lv_btn_create(btn_cont);
-    lv_obj_set_size(btn_ok, 150, 50);
+    lv_obj_set_size(btn_ok, UI_X(150), UI_Y(50));
     lv_obj_set_style_bg_color(btn_ok, lv_color_hex(0xFFD600), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(btn_ok, lv_color_hex(0xFFC000), LV_PART_MAIN | LV_STATE_PRESSED);
     lv_obj_set_style_radius(btn_ok, 15, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -806,7 +807,7 @@ void vedioMenuSetting_Lapse(lv_ui_t *ui)
 
     // 创建底层控件
     obj_Vedio_TimeLapse_s = lv_obj_create(NULL);
-    lv_obj_set_size(obj_Vedio_TimeLapse_s, 640, 480);
+    lv_obj_set_size(obj_Vedio_TimeLapse_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_Vedio_TimeLapse_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_pad_all(obj_Vedio_TimeLapse_s, 0, 0);
     lv_obj_set_style_bg_opa(obj_Vedio_TimeLapse_s, LV_OPA_TRANSP, LV_PART_MAIN);
@@ -818,7 +819,7 @@ void vedioMenuSetting_Lapse(lv_ui_t *ui)
     // Write codes cont_top (顶部栏)
     lv_obj_t *cont_top = lv_obj_create(obj_Vedio_TimeLapse_s);
     lv_obj_set_pos(cont_top, 0, 0);
-    lv_obj_set_size(cont_top, 640, 60);
+    lv_obj_set_size(cont_top, UI_X(640), UI_Y(60));
     lv_obj_set_scrollbar_mode(cont_top, LV_SCROLLBAR_MODE_OFF);
 
     // Write style for cont_top, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
@@ -826,8 +827,8 @@ void vedioMenuSetting_Lapse(lv_ui_t *ui)
 
     // Write codes btn_back (返回按钮)
     lv_obj_t* btn_back = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_back, 4, 4);
-    lv_obj_set_size(btn_back, 100, 52);
+    lv_obj_set_pos(btn_back, UI_X(4), UI_Y(4));
+    lv_obj_set_size(btn_back, UI_X(100), UI_Y(52));
     lv_obj_add_style(btn_back, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 为返回按钮添加事件处理
@@ -842,7 +843,7 @@ void vedioMenuSetting_Lapse(lv_ui_t *ui)
     lv_obj_t* title = lv_label_create(cont_top);
     lv_label_set_text(title, str_language_timelapse_recording_settings[get_curr_language()]);
     lv_label_set_long_mode(title, LV_LABEL_LONG_WRAP);
-    lv_obj_align(title, LV_ALIGN_TOP_LEFT, 70, 50);
+    lv_obj_align(title, LV_ALIGN_TOP_LEFT, UI_X(70), UI_Y(50));
     lv_obj_set_style_pad_all(cont_top, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(title, get_usr_fonts(ALI_PUHUITI_FONTPATH, MENU_FONT_SIZE), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -851,11 +852,11 @@ void vedioMenuSetting_Lapse(lv_ui_t *ui)
     // Write codes cont_settings (设置选项容器)
     // 创建设置容器
     cont_settings_s = lv_obj_create(obj_Vedio_TimeLapse_s);
-    lv_obj_set_size(cont_settings_s, 600, MENU_CONT_SIZE);
-    lv_obj_align(cont_settings_s, LV_ALIGN_TOP_MID, 0, 64);
+    lv_obj_set_size(cont_settings_s, UI_X(600), UI_Y(MENU_CONT_SIZE));
+    lv_obj_align(cont_settings_s, LV_ALIGN_TOP_MID, 0, UI_Y(64));
     lv_obj_set_style_bg_opa(cont_settings_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(cont_settings_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_all(cont_settings_s, 10, 0);
+    lv_obj_set_style_pad_all(cont_settings_s, UI_X(10), 0);
 
     // 创建按钮
     const char *btn_labels[] = {str_language_enable_time_range[get_curr_language()], str_language_start_time[get_curr_language()], str_language_end_time[get_curr_language()], str_language_time_interval[get_curr_language()], str_language_number_of_shots[get_curr_language()]};
@@ -864,8 +865,8 @@ void vedioMenuSetting_Lapse(lv_ui_t *ui)
     for(uint8_t i = 0; i < BUTTON_COUNT; i++) {
         // 创建按钮
         buttons[i].btn = lv_button_create(cont_settings_s);
-        lv_obj_set_size(buttons[i].btn, 560, MENU_BTN_SIZE);
-        lv_obj_align(buttons[i].btn, LV_ALIGN_TOP_MID, 0, (MENU_BTN_SIZE + 10) * i);
+        lv_obj_set_size(buttons[i].btn, UI_X(560), UI_Y(MENU_BTN_SIZE));
+        lv_obj_align(buttons[i].btn, LV_ALIGN_TOP_MID, 0, UI_Y((MENU_BTN_SIZE + 10) * i));
         lv_obj_set_style_bg_opa(buttons[i].btn, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_shadow_width(buttons[i].btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_border_width(buttons[i].btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -918,10 +919,10 @@ void vedioMenuSetting_Lapse(lv_ui_t *ui)
         // 创建分割线
         lines[i] = lv_line_create(cont_settings_s);
         int y_position = (MENU_BTN_SIZE + 10) * (i + 1) - 4;
-        line_points_pool[i][0].x = 10;
-        line_points_pool[i][0].y = y_position;
-        line_points_pool[i][1].x = 570;
-        line_points_pool[i][1].y = y_position;
+        line_points_pool[i][0].x = UI_X(10);
+        line_points_pool[i][0].y = UI_Y(y_position);
+        line_points_pool[i][1].x = UI_X(570);
+        line_points_pool[i][1].y = UI_Y(y_position);
         lv_line_set_points(lines[i], line_points_pool[i], 2);
         lv_obj_set_style_line_width(lines[i], 2, 0);
         lv_obj_set_style_line_color(lines[i], lv_color_hex(0x5F5F5F), 0);
@@ -941,7 +942,7 @@ void vedioMenuSetting_Lapse(lv_ui_t *ui)
 
     // 在上方添加一条分割线
     lv_obj_t *up_line                       = lv_line_create(obj_Vedio_TimeLapse_s);
-    static lv_point_precise_t points_line[] = {{10, 60}, {640, 60}};
+    static lv_point_precise_t points_line[] = {{UI_X(10), UI_Y(60)}, {UI_X(640), UI_Y(60)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);

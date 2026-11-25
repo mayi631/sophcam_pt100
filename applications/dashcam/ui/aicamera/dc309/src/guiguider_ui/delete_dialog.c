@@ -3,6 +3,7 @@
 /*********************
  *      INCLUDES
  *********************/
+#include "ui_layout.h"
 #include "common/extract_thumbnail.h"
 #include "filemng.h"
 #include "indev.h"
@@ -286,7 +287,7 @@ void create_simple_delete_dialog(const char *file_name)
 
     // 创建弹窗容器
     simple_dialog = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(simple_dialog, 640, 480);
+    lv_obj_set_size(simple_dialog, UI_X(640), UI_Y(480));
     lv_obj_set_style_bg_opa(simple_dialog, 255, LV_PART_MAIN | LV_STATE_DEFAULT); // 不透明度 0~255，255 完全不透明
     lv_obj_set_style_bg_color(simple_dialog, lv_color_hex(0), 0);
     lv_obj_set_style_radius(simple_dialog, 0, 0);
@@ -299,7 +300,7 @@ void create_simple_delete_dialog(const char *file_name)
 
     // 创建弹窗容器
     lv_obj_t *simple_dialog_scrll = lv_obj_create(simple_dialog);
-    lv_obj_set_size(simple_dialog_scrll, 280, 150);
+    lv_obj_set_size(simple_dialog_scrll, UI_X(280), UI_Y(150));
     lv_obj_center(simple_dialog_scrll);
     lv_obj_set_style_bg_color(simple_dialog_scrll, lv_color_hex(0x2D2D2D), 0);
     lv_obj_set_style_radius(simple_dialog_scrll, 10, 0);
@@ -314,16 +315,16 @@ void create_simple_delete_dialog(const char *file_name)
     if (file_name != NULL) {
         lv_label_set_text(label, strcmp(dot, ".mov") ? str_language_confirm_delete_this_photo[get_curr_language()] : str_language_confirm_delete_this_video[get_curr_language()]);
     }
-    lv_obj_set_size(label, 240, 90);
+    lv_obj_set_size(label, UI_X(240), UI_Y(90));
     lv_obj_set_style_text_color(label, lv_color_white(), 0);
     lv_obj_add_style(label, &ttf_font_18, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 20);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, UI_Y(20));
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 确认按钮
     lv_obj_t *confirm_btn = lv_btn_create(simple_dialog_scrll);
-    lv_obj_set_size(confirm_btn, 100, 35);
-    lv_obj_align(confirm_btn, LV_ALIGN_BOTTOM_LEFT, 30, -20);
+    lv_obj_set_size(confirm_btn, UI_X(100), UI_Y(35));
+    lv_obj_align(confirm_btn, LV_ALIGN_BOTTOM_LEFT, UI_X(30), UI_Y(-20));
     lv_obj_set_style_bg_color(confirm_btn, lv_color_hex(0xFF5555), 0);
     lv_obj_set_style_pad_all(confirm_btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
@@ -338,8 +339,8 @@ void create_simple_delete_dialog(const char *file_name)
 
     // 取消按钮
     lv_obj_t* cancel_btn = lv_btn_create(simple_dialog_scrll);
-    lv_obj_set_size(cancel_btn, 100, 35);
-    lv_obj_align(cancel_btn, LV_ALIGN_BOTTOM_RIGHT, -30, -20);
+    lv_obj_set_size(cancel_btn, UI_X(100), UI_Y(35));
+    lv_obj_align(cancel_btn, LV_ALIGN_BOTTOM_RIGHT, UI_X(-30), UI_Y(-20));
     lv_obj_set_style_bg_color(cancel_btn, lv_color_hex(0x333333), 0);
     lv_obj_set_style_pad_all(cancel_btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 

@@ -233,6 +233,12 @@ CXXFLAGS += $(KBUILD_DEFINES)
 
 include $(COMMON_DIR)/common_lib.mk
 
+ifeq ($(UI_PACKET), dc309)
+UI_LAYOUT_OBJS := $(filter $(ODIR)/ui/$(CFG_PDT_SUB)/$(UI_PACKET)/%,$(OBJS))
+UI_LAYOUT_OBJS := $(filter-out $(ODIR)/ui/$(CFG_PDT_SUB)/$(UI_PACKET)/src/guiguider_ui/images/% $(ODIR)/ui/$(CFG_PDT_SUB)/$(UI_PACKET)/src/guiguider_ui/guider_fonts/%,$(UI_LAYOUT_OBJS))
+$(UI_LAYOUT_OBJS): $(UI_DIR)/include/config.h $(UI_DIR)/src/guiguider_ui/ui_layout.h $(UI_DIR)/src/guiguider_ui/ui_image.h
+endif
+
 ifeq ($(CONFIG_PT100_MOTOR), y)
 $(TARGET): $(MANAGEER_DIR)/lib/libapp_mng.a
 endif

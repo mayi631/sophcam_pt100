@@ -28,5 +28,6 @@ extern lv_style_t style_list_row_even;
 extern lv_style_t style_list_row_odd;
 
 void init_common_style(void);
+void ui_settings_title_create(lv_obj_t *parent, const char *text);
 
 #endif

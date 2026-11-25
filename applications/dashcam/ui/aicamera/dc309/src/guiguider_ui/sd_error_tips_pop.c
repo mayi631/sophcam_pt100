@@ -2,6 +2,7 @@
 // ! #region 1. 头文件与宏定义
 // #############################################################################
 #define DEBUG
+#include "ui_layout.h"
 #include "config.h"
 #include "custom.h"
 #include "gui_guider.h"
@@ -167,7 +168,7 @@ static void create_sd_error_warning_popup(void)
 
     // 创建浮窗容器
     sd_error_popup = lv_obj_create(sd_error_mask);
-    lv_obj_set_size(sd_error_popup, 320, 240);
+    lv_obj_set_size(sd_error_popup, UI_X(320), UI_Y(240));
     lv_obj_center(sd_error_popup);
     lv_obj_set_style_bg_color(sd_error_popup, lv_color_hex(0x1E1E2E), 0);
     lv_obj_set_style_bg_opa(sd_error_popup, LV_OPA_100, 0);
@@ -176,21 +177,21 @@ static void create_sd_error_warning_popup(void)
     lv_obj_set_style_shadow_opa(sd_error_popup, LV_OPA_40, 0);
     lv_obj_set_style_border_width(sd_error_popup, 0, 0);
     lv_obj_clear_flag(sd_error_popup, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_set_style_pad_all(sd_error_popup, 20, 0);
+    lv_obj_set_style_pad_all(sd_error_popup, UI_X(20), 0);
 
     // 创建警告图标
     lv_obj_t* icon = lv_label_create(sd_error_popup);
     lv_label_set_text(icon, LV_SYMBOL_SD_CARD);
     lv_obj_set_style_text_color(icon, lv_color_hex(0xFFA500), 0);
     lv_obj_set_style_text_font(icon, &lv_font_montserrat_36, 0);
-    lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, 15);
+    lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, UI_Y(15));
 
     // 创建标题
     lv_obj_t* title = lv_label_create(sd_error_popup);
     lv_label_set_text(title, str_language_sd_card_abnormal[get_curr_language()]);
     lv_obj_add_style(title, &ttf_font_24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFA500), 0);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 60);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, UI_Y(60));
 
     // 创建提示文本
     lv_obj_t* hint = lv_label_create(sd_error_popup);
@@ -198,20 +199,20 @@ static void create_sd_error_warning_popup(void)
     lv_obj_add_style(hint, &ttf_font_18, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(hint, lv_color_hex(0xA6ADC8), 0);
     lv_obj_set_style_text_align(hint, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_set_width(hint, 280);
-    lv_obj_align(hint, LV_ALIGN_TOP_MID, 0, 100);
+    lv_obj_set_width(hint, UI_X(280));
+    lv_obj_align(hint, LV_ALIGN_TOP_MID, 0, UI_Y(100));
 
     // 创建按钮容器
     lv_obj_t* btn_cont = lv_obj_create(sd_error_popup);
     lv_obj_remove_style_all(btn_cont);
-    lv_obj_set_size(btn_cont, 280, 50);
-    lv_obj_align(btn_cont, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_set_size(btn_cont, UI_X(280), UI_Y(50));
+    lv_obj_align(btn_cont, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-10));
     lv_obj_set_flex_flow(btn_cont, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(btn_cont, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
     // 创建取消按钮
     lv_obj_t* btn_cancel = lv_btn_create(btn_cont);
-    lv_obj_set_size(btn_cancel, 120, 40);
+    lv_obj_set_size(btn_cancel, UI_X(120), UI_Y(40));
     lv_obj_set_style_bg_color(btn_cancel, lv_color_hex(0x404040), 0);
     lv_obj_set_style_radius(btn_cancel, 15, 0);
 
@@ -223,7 +224,7 @@ static void create_sd_error_warning_popup(void)
 
     // 创建格式化按钮
     lv_obj_t* btn_format = lv_btn_create(btn_cont);
-    lv_obj_set_size(btn_format, 120, 40);
+    lv_obj_set_size(btn_format, UI_X(120), UI_Y(40));
     lv_obj_set_style_bg_color(btn_format, lv_color_hex(0xE53935), 0);
     lv_obj_set_style_radius(btn_format, 15, 0);
 

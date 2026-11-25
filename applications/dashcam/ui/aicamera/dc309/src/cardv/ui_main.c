@@ -1,4 +1,6 @@
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include <sys/prctl.h>
 #include <unistd.h>
 #include <pthread.h>
@@ -143,11 +145,17 @@ static void my_flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * c
     lv_display_rotation_t rotation = lv_display_get_rotation(disp);
 
     /* Not all framebuffer kernel drivers support hardware rotation, so we need to handle it in software here */
-    if(rotation != LV_DISPLAY_ROTATION_0 && LV_LINUX_FBDEV_RENDER_MODE == LV_DISPLAY_RENDER_MODE_PARTIAL) {
+    if(rotation != LV_DISPLAY_ROTATION_0 && LV_LINUX_FBDEV_RENDER_MODE != LV_DISPLAY_RENDER_MODE_DIRECT) {
         /* (Re)allocate temporary buffer if needed */
         size_t buf_size = w * h * px_size;
         if(!dsc->rotated_buf || dsc->rotated_buf_size != buf_size) {
-            dsc->rotated_buf = realloc(dsc->rotated_buf, buf_size);
+            uint8_t *rotated_buf = realloc(dsc->rotated_buf, buf_size);
+            if(rotated_buf == NULL) {
+                LV_LOG_ERROR("Failed to allocate rotation buffer");
+                lv_display_flush_ready(disp);
+                return;
+            }
+            dsc->rotated_buf = rotated_buf;
             dsc->rotated_buf_size = buf_size;
         }
 
@@ -186,7 +194,7 @@ static void my_flush_cb(lv_display_t * disp, const lv_area_t * area, uint8_t * c
         lv_display_flush_ready(disp);
         return;
     }
-#ifdef USE_DOUBLE_FB
+#if USE_DOUBLE_FB
     int current_display = (dsc->vinfo.yoffset == 0) ? 0 : 1;
     int write_buffer = (current_display + 1) % 2;
     dsc->vinfo.yoffset = write_buffer * dsc->vinfo.yres;
@@ -296,14 +304,30 @@ static void _linux_fbdev_set_file(lv_display_t *disp, const char * file)
         return;
     }
 
-#ifdef USE_DOUBLE_FB
-    dsc->vinfo.yres_virtual = V_RES * 2;
-    dsc->vinfo.xres_virtual = H_RES;
+    uint32_t fb_width = H_RES;
+    uint32_t fb_height = V_RES;
+    lv_display_rotation_t rotation = lv_display_get_rotation(disp);
+    if(rotation == LV_DISPLAY_ROTATION_90 || rotation == LV_DISPLAY_ROTATION_270) {
+        fb_width = V_RES;
+        fb_height = H_RES;
+    }
+    dsc->vinfo.xres = fb_width;
+    dsc->vinfo.yres = fb_height;
+    dsc->vinfo.xres_virtual = fb_width;
+    dsc->vinfo.yres_virtual = fb_height;
+    dsc->vinfo.xoffset = 0;
+    dsc->vinfo.yoffset = 0;
+#if USE_DOUBLE_FB
+    dsc->vinfo.yres_virtual *= 2;
+#endif
     if(ioctl(dsc->fbfd, FBIOPUT_VSCREENINFO, &dsc->vinfo) == -1) {
         perror("Error setting var screen info");
         return;
     }
-#endif
+    if(ioctl(dsc->fbfd, FBIOGET_FSCREENINFO, &dsc->finfo) == -1) {
+        perror("Error reading updated fixed information");
+        return;
+    }
 #endif /* LV_LINUX_FBDEV_BSD */
 
     LV_LOG_INFO("%dx%d, %dbpp", dsc->vinfo.xres, dsc->vinfo.yres, dsc->vinfo.bits_per_pixel);
@@ -376,15 +400,39 @@ static const char *getenv_default(const char *name, const char *dflt)
     return getenv(name) ?: dflt;
 }
 
+static lv_display_rotation_t fbdev_get_rotation(void)
+{
+    int tde_rotation = 0;
+    lv_display_rotation_t driver_rotation = LV_DISPLAY_ROTATION_0;
+    FILE *rotation_file = fopen("/sys/module/cv184x_gfbg/parameters/tde_rot", "r");
+    if(rotation_file != NULL) {
+        if(fscanf(rotation_file, "%d", &tde_rotation) != 1) {
+            LV_LOG_WARN("Failed to read framebuffer TDE rotation");
+            tde_rotation = 0;
+        }
+        fclose(rotation_file);
+    }
+    if(tde_rotation == 1) {
+        driver_rotation = LV_DISPLAY_ROTATION_270;
+    }
+    else if(tde_rotation == 2) {
+        driver_rotation = LV_DISPLAY_ROTATION_90;
+    }
+    lv_display_rotation_t rotation = (lv_display_rotation_t)((FB_ROTATION + 4 - driver_rotation) % 4);
+    CVI_LOGI("PT100 UI: logical=%dx%d, tde_rot=%d, lvgl_rotation=%d\n",
+             H_RES, V_RES, tde_rotation, rotation * 90);
+    return rotation;
+}
+
 static void lv_linux_disp_init(void)
 {
     const char *device = getenv_default("LV_LINUX_FBDEV_DEVICE", FB_DEV_NAME);
     lv_display_t *disp = lv_linux_fbdev_create();
 
     lv_display_set_flush_cb(disp, my_flush_cb);
+    lv_display_set_rotation(disp, fbdev_get_rotation());
     _linux_fbdev_set_file(disp, device);
     // lv_linux_fbdev_set_file(disp, device);
-    lv_display_set_resolution(disp, H_RES, V_RES);
 
     global_touch_indev = lv_evdev_create(LV_INDEV_TYPE_POINTER, TOUCH_PANEL_EVENT_PATH);
     lv_indev_set_display(global_touch_indev, disp);
@@ -469,12 +517,12 @@ void show_power_long_press_image(void)
     }
 
     // 放 toplayer 上显示图片
-    global_byebye_img = lv_img_create(lv_layer_top());
+    global_byebye_img = ui_image_create(lv_layer_top());
     // lv_img_set_src(global_byebye_img, BYEBYE_IMAGE_PATH);
 
     // 确保图片对象是可见的
     lv_obj_set_pos(global_byebye_img, 0, 0);
-    lv_obj_set_size(global_byebye_img, 640, 480);
+    lv_obj_set_size(global_byebye_img, UI_X(640), UI_Y(480));
     lv_obj_clear_flag(global_byebye_img, LV_OBJ_FLAG_HIDDEN);
     // 创建定时器，2秒（2000ms）后执行黑屏操作
     global_timeout = false;

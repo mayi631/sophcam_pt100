@@ -1,3 +1,5 @@
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "common/extract_thumbnail.h"
 #include "custom.h"
 #include "filemng.h"
@@ -72,9 +74,9 @@ void photoAISelect_listCreat(lv_obj_t *parent,lv_event_cb_t event_cb)
 
     // 创建滚动容器
     AISelect_scroll_cont_s = lv_obj_create(parent);
-    lv_obj_set_size(AISelect_scroll_cont_s, 440, 120);
+    lv_obj_set_size(AISelect_scroll_cont_s, UI_X(440), UI_Y(120));
     if (AI_VOICE_CUSTOM == AIModeSelect_GetMode()) {
-        lv_obj_set_size(AISelect_scroll_cont_s, 220, 120);
+        lv_obj_set_size(AISelect_scroll_cont_s, UI_X(220), UI_Y(120));
     }
     lv_obj_align(AISelect_scroll_cont_s, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_bg_color(AISelect_scroll_cont_s, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -88,13 +90,13 @@ void photoAISelect_listCreat(lv_obj_t *parent,lv_event_cb_t event_cb)
     for(int i = 0; i < str_len; i++) {
         // 创建设置选项容器
         lv_obj_t *btn = lv_btn_create(AISelect_scroll_cont_s);
-        lv_obj_set_size(btn, 70, 100);
-        lv_obj_align(btn, LV_ALIGN_TOP_LEFT, (70 + 10) * i, 0);
+        lv_obj_set_size(btn, UI_X(70), UI_Y(100));
+        lv_obj_align(btn, LV_ALIGN_TOP_LEFT, UI_X((70 + 10) * i), 0);
         if(AI_BG_CHANGE == AIModeSelect_GetMode()) {
-            lv_obj_align(btn, LV_ALIGN_TOP_MID, -160 + (70 + 10) * i, 0);
+            lv_obj_align(btn, LV_ALIGN_TOP_MID, UI_X(-160 + (70 + 10) * i), 0);
         } else if(AI_VOICE_CUSTOM == AIModeSelect_GetMode()) {
             lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, 0);
-            lv_obj_set_size(btn, 100, 100);
+            lv_obj_set_size(btn, UI_X(100), UI_X(100));
         }
         lv_obj_set_style_pad_all(btn, 0, LV_STATE_DEFAULT);
         lv_obj_set_style_bg_color(btn, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -109,8 +111,8 @@ void photoAISelect_listCreat(lv_obj_t *parent,lv_event_cb_t event_cb)
             lv_obj_scroll_to_view(btn, LV_ANIM_ON);
         }
 
-        lv_obj_t *img = lv_img_create(btn);
-        lv_obj_set_size(img, 58, 60);
+        lv_obj_t *img = ui_image_create(btn);
+        lv_obj_set_size(img, UI_X(58), UI_Y(60));
         lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_set_style_pad_all(img, 0, LV_STATE_DEFAULT);
         // 设置图片不可点击，确保事件传递给父按钮
@@ -125,7 +127,7 @@ void photoAISelect_listCreat(lv_obj_t *parent,lv_event_cb_t event_cb)
         }
 
         lv_obj_t *label = lv_label_create(btn);
-        lv_obj_set_size(label, 70, 32);
+        lv_obj_set_size(label, UI_X(70), UI_Y(32));
         lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, 0);
         lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL);
         lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -140,7 +142,7 @@ void photoAISelect_listCreat(lv_obj_t *parent,lv_event_cb_t event_cb)
             lv_label_set_text_fmt(label, "%s", bg_btn_labels[i]);
         } else if(AI_VOICE_CUSTOM == AIModeSelect_GetMode()) {
             lv_label_set_text_fmt(label, "%s", str_language_hold_to_speak[get_curr_language()]);
-            lv_obj_set_size(label, 100, 32);
+            lv_obj_set_size(label, UI_X(100), UI_Y(32));
         }
     }
 }

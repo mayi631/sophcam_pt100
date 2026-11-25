@@ -1,5 +1,7 @@
 #define DEBUG
 
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "common/extract_thumbnail.h"
 #include "common/takephoto.h"
 #include "config.h"
@@ -999,9 +1001,9 @@ static void photo_left_callback(void)
             }
             //更新位置
             if (get_self_index() == 0) {
-                lv_obj_align(g_ui.page_photo.img_shootingmode, LV_ALIGN_TOP_LEFT, 6, 64);
+                lv_obj_align(g_ui.page_photo.img_shootingmode, LV_ALIGN_TOP_LEFT, UI_CAMERA_MARGIN, UI_CAMERA_SECOND_ROW);
             } else {
-                lv_obj_align(g_ui.page_photo.img_shootingmode, LV_ALIGN_TOP_LEFT, 6, 130);
+                lv_obj_align(g_ui.page_photo.img_shootingmode, LV_ALIGN_TOP_LEFT, UI_CAMERA_MARGIN, UI_CAMERA_SECOND_ROW + UI_CAMERA_ICON_SIZE + UI_CAMERA_MARGIN);
             }
             lv_obj_update_layout(g_ui.page_photo.img_shootingmode);
         } else {
@@ -1041,17 +1043,17 @@ static void photo_right_callback(void)
             show_image(g_ui.page_photo.img_shootingmode, shootmode[get_shootmode(0)]);
 
             if (((get_shootmode(1) != 0 && AIModeSelect_GetMode() == AI_NONE))) {
-                lv_obj_set_size(g_ui.page_photo.img_shootingmode, 58, 58);
+                lv_obj_remove_flag(g_ui.page_photo.img_shootingmode, LV_OBJ_FLAG_HIDDEN);
                 set_current_page_handler(takephoto_delay_handler);
             } else {
-                lv_obj_set_size(g_ui.page_photo.img_shootingmode, 0, 58);
+                lv_obj_add_flag(g_ui.page_photo.img_shootingmode, LV_OBJ_FLAG_HIDDEN);
                 set_current_page_handler(takephoto_key_handler);
             }
             //更新位置
             if (get_self_index() == 0) {
-                lv_obj_align(g_ui.page_photo.img_shootingmode, LV_ALIGN_TOP_LEFT, 6, 64);
+                lv_obj_align(g_ui.page_photo.img_shootingmode, LV_ALIGN_TOP_LEFT, UI_CAMERA_MARGIN, UI_CAMERA_SECOND_ROW);
             } else {
-                lv_obj_align(g_ui.page_photo.img_shootingmode, LV_ALIGN_TOP_LEFT, 6, 130);
+                lv_obj_align(g_ui.page_photo.img_shootingmode, LV_ALIGN_TOP_LEFT, UI_CAMERA_MARGIN, UI_CAMERA_SECOND_ROW + UI_CAMERA_ICON_SIZE + UI_CAMERA_MARGIN);
             }
             lv_obj_update_layout(g_ui.page_photo.img_shootingmode);
         } else {
@@ -1315,34 +1317,34 @@ void Home_Photo(lv_ui_t *ui)
     create_viewfinder(Home_Photo_Item->photoscr);
 
     // 相机模式按钮
-    Home_Photo_Item->img_mode = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(Home_Photo_Item->img_mode, LV_ALIGN_TOP_LEFT, 11, 10);
-    lv_obj_set_size(Home_Photo_Item->img_mode, 58, 58);
+    Home_Photo_Item->img_mode = ui_imagebutton_create(Home_Photo_Item->photoscr);
+    lv_obj_align(Home_Photo_Item->img_mode, LV_ALIGN_TOP_LEFT, UI_CAMERA_MARGIN, UI_CAMERA_TOP);
+    lv_obj_set_size(Home_Photo_Item->img_mode, UI_CAMERA_ICON_SIZE, UI_CAMERA_ICON_SIZE);
     show_image(Home_Photo_Item->img_mode, "paizhaompshi.png");
 
     // AI按钮
-    Home_Photo_Item->img_ai = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(Home_Photo_Item->img_ai, LV_ALIGN_TOP_LEFT, 69, 10);
-    lv_obj_set_size(Home_Photo_Item->img_ai, 58, 58);
+    Home_Photo_Item->img_ai = ui_imagebutton_create(Home_Photo_Item->photoscr);
+    lv_obj_align(Home_Photo_Item->img_ai, LV_ALIGN_TOP_LEFT, 64, UI_CAMERA_TOP);
+    lv_obj_set_size(Home_Photo_Item->img_ai, UI_CAMERA_ICON_SIZE, UI_CAMERA_ICON_SIZE);
     const char* mode_icon[] = { "aimoshi.png", "风格_1.png", "AI背景替换_1.png", "美颜_1.png", "语音_自定义_1.png" };
     show_image(Home_Photo_Item->img_ai, mode_icon[AIModeSelect_GetMode()]);
 
     // 闪光灯按钮
-    Home_Photo_Item->img_flashlight = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(Home_Photo_Item->img_flashlight, LV_ALIGN_TOP_LEFT, 127, 16);
-    lv_obj_set_size(Home_Photo_Item->img_flashlight, 48, 48);
+    Home_Photo_Item->img_flashlight = ui_imagebutton_create(Home_Photo_Item->photoscr);
+    lv_obj_align(Home_Photo_Item->img_flashlight, LV_ALIGN_TOP_LEFT, 116, UI_CAMERA_TOP);
+    lv_obj_set_size(Home_Photo_Item->img_flashlight, UI_CAMERA_ICON_SIZE, UI_CAMERA_ICON_SIZE);
     const char* flashlight[] = { "flash_off.png", "flash_on.png", "flash_auto.png" };
     show_image(Home_Photo_Item->img_flashlight, flashlight[photo_getFlash_Index()]);
 
     // 分辨率按钮
-    lv_obj_t* res = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(res, LV_ALIGN_TOP_LEFT, 181, 10);
-    lv_obj_set_size(res, 66, 58);
+    lv_obj_t* res = ui_image_create(Home_Photo_Item->photoscr);
+    lv_obj_align(res, LV_ALIGN_TOP_LEFT, 168, UI_CAMERA_TOP);
+    lv_obj_set_size(res, 56, UI_CAMERA_ICON_SIZE);
     show_image(res, photo_getRes_Icon());
     // SD卡状态
-    Home_Photo_Item->img_sdonline = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(Home_Photo_Item->img_sdonline, LV_ALIGN_TOP_RIGHT, -63, 10);
-    lv_obj_set_size(Home_Photo_Item->img_sdonline, 48, 48);
+    Home_Photo_Item->img_sdonline = ui_image_create(Home_Photo_Item->photoscr);
+    lv_obj_align(Home_Photo_Item->img_sdonline, LV_ALIGN_TOP_RIGHT, -56, UI_CAMERA_TOP + 4);
+    lv_obj_set_size(Home_Photo_Item->img_sdonline, UI_CAMERA_STATUS_SIZE, UI_CAMERA_STATUS_SIZE);
     if (ui_common_cardstatus()) {
         show_image(Home_Photo_Item->img_sdonline, "icon_card_online.png");
     } else {
@@ -1350,52 +1352,52 @@ void Home_Photo(lv_ui_t *ui)
     }
 
     // 电池状态
-    Home_Photo_Item->img_batter = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(Home_Photo_Item->img_batter, LV_ALIGN_TOP_RIGHT, -13, 12);
-    lv_obj_set_size(Home_Photo_Item->img_batter, 44, 44);
+    Home_Photo_Item->img_batter = ui_image_create(Home_Photo_Item->photoscr);
+    lv_obj_align(Home_Photo_Item->img_batter, LV_ALIGN_TOP_RIGHT, -UI_CAMERA_MARGIN, UI_CAMERA_TOP + 4);
+    lv_obj_set_size(Home_Photo_Item->img_batter, UI_CAMERA_STATUS_SIZE, UI_CAMERA_STATUS_SIZE);
     show_image(Home_Photo_Item->img_batter, batter_image_big[g_batter_image_index]);
 
     // 相册按钮
-    lv_obj_t* img_album = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(img_album, LV_ALIGN_TOP_RIGHT, -4, 70);
-    lv_obj_set_size(img_album, 57, 48);
+    lv_obj_t* img_album = ui_imagebutton_create(Home_Photo_Item->photoscr);
+    lv_obj_align(img_album, LV_ALIGN_TOP_RIGHT, -UI_CAMERA_MARGIN, UI_CAMERA_SECOND_ROW);
+    lv_obj_set_size(img_album, UI_CAMERA_TOOL_SIZE, UI_CAMERA_TOOL_SIZE);
     show_image(img_album, "home_相册.png");
     lv_obj_add_event_cb(img_album, buttonPhoto_All_event_handler, LV_EVENT_CLICKED, (void*)(intptr_t)10);
 
     // 退出按钮
-    Home_Photo_Item->img_exit = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(Home_Photo_Item->img_exit, LV_ALIGN_BOTTOM_RIGHT, -11, -16);
-    lv_obj_set_size(Home_Photo_Item->img_exit, 48, 48);
+    Home_Photo_Item->img_exit = ui_imagebutton_create(Home_Photo_Item->photoscr);
+    lv_obj_align(Home_Photo_Item->img_exit, LV_ALIGN_BOTTOM_RIGHT, -UI_CAMERA_MARGIN, -UI_CAMERA_MARGIN);
+    lv_obj_set_size(Home_Photo_Item->img_exit, UI_CAMERA_TOOL_SIZE, UI_CAMERA_TOOL_SIZE);
     show_image(Home_Photo_Item->img_exit, "exit.png");
     lv_obj_set_style_image_recolor(Home_Photo_Item->img_exit, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     lv_obj_set_style_image_recolor_opa(Home_Photo_Item->img_exit, LV_OPA_COVER, LV_PART_MAIN);
 
     // 菜单按钮
-    Home_Photo_Item->img_menu = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(Home_Photo_Item->img_menu, LV_ALIGN_BOTTOM_LEFT, 11, -10);
-    lv_obj_set_size(Home_Photo_Item->img_menu, 48, 48);
+    Home_Photo_Item->img_menu = ui_imagebutton_create(Home_Photo_Item->photoscr);
+    lv_obj_align(Home_Photo_Item->img_menu, LV_ALIGN_BOTTOM_LEFT, UI_CAMERA_MARGIN, -UI_CAMERA_MARGIN);
+    lv_obj_set_size(Home_Photo_Item->img_menu, UI_CAMERA_TOOL_SIZE, UI_CAMERA_TOOL_SIZE);
     show_image(Home_Photo_Item->img_menu, "menu.png");
 
     // 滤镜
     lv_obj_t* btn_effect = lv_button_create(Home_Photo_Item->photoscr);
-    lv_obj_align(btn_effect, LV_ALIGN_BOTTOM_LEFT, 65, -10);
-    lv_obj_set_size(btn_effect, 50, 50);
+    lv_obj_align(btn_effect, LV_ALIGN_BOTTOM_LEFT, UI_CAMERA_SIDE_OFFSET, -UI_CAMERA_MARGIN);
+    lv_obj_set_size(btn_effect, UI_CAMERA_TOOL_SIZE, UI_CAMERA_TOOL_SIZE);
     lv_obj_set_style_bg_opa(btn_effect, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 透明背景
     lv_obj_set_style_pad_all(btn_effect, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(btn_effect, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_width(btn_effect, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_event_cb(btn_effect, photoEffect_Select_event_cb, LV_EVENT_CLICKED, NULL);
 
-    img_effect_s = lv_img_create(btn_effect);
-    lv_obj_set_size(img_effect_s, 48, 50);
-    lv_obj_align(img_effect_s, LV_ALIGN_TOP_MID, 0, 0);
+    img_effect_s = ui_image_create(btn_effect);
+    lv_obj_set_size(img_effect_s, UI_CAMERA_TOOL_SIZE, UI_CAMERA_TOOL_SIZE);
+    lv_obj_align(img_effect_s, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_pad_all(img_effect_s, 0, LV_STATE_DEFAULT);
     show_image(img_effect_s, effect_style_small[geteffect_index()]);
 
     // 翻转
-    Home_Photo_Item->img_flip = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(Home_Photo_Item->img_flip, LV_ALIGN_BOTTOM_RIGHT, -85, -10);
-    lv_obj_set_size(Home_Photo_Item->img_flip, 58, 58);
+    Home_Photo_Item->img_flip = ui_imagebutton_create(Home_Photo_Item->photoscr);
+    lv_obj_align(Home_Photo_Item->img_flip, LV_ALIGN_BOTTOM_RIGHT, -UI_CAMERA_SIDE_OFFSET, -UI_CAMERA_MARGIN);
+    lv_obj_set_size(Home_Photo_Item->img_flip, UI_CAMERA_TOOL_SIZE, UI_CAMERA_TOOL_SIZE);
     show_image(Home_Photo_Item->img_flip, "翻转镜头.png");
 
     // 时间
@@ -1415,9 +1417,9 @@ void Home_Photo(lv_ui_t *ui)
     lv_obj_set_style_text_color(label_self_tips_s, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_flag(label_self_tips_s, LV_OBJ_FLAG_HIDDEN);
 
-    s_img_wifi = lv_img_create(Home_Photo_Item->photoscr);
-    lv_obj_set_size(s_img_wifi, 24, 23);
-    lv_obj_align(s_img_wifi, LV_ALIGN_TOP_RIGHT, -185, 23);
+    s_img_wifi = ui_image_create(Home_Photo_Item->photoscr);
+    lv_obj_set_size(s_img_wifi, 24, 24);
+    lv_obj_align(s_img_wifi, LV_ALIGN_TOP_RIGHT, -UI_CAMERA_SIDE_OFFSET, UI_CAMERA_SECOND_ROW + 8);
     lv_obj_set_style_pad_all(s_img_wifi, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_image_recolor(s_img_wifi, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     lv_obj_set_style_image_recolor_opa(s_img_wifi, LV_OPA_COVER, LV_PART_MAIN);
@@ -1425,25 +1427,28 @@ void Home_Photo(lv_ui_t *ui)
     // 剩余拍照数量
     Home_Photo_Item->label_numphoto = lv_label_create(Home_Photo_Item->photoscr);
     lv_label_set_text_fmt(Home_Photo_Item->label_numphoto, "%02d", photo_CalculateRemainingPhotoCount());
-    lv_label_set_long_mode(Home_Photo_Item->label_numphoto, LV_LABEL_LONG_WRAP);
+    lv_label_set_long_mode(Home_Photo_Item->label_numphoto, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(Home_Photo_Item->label_numphoto, UI_CAMERA_COUNT_WIDTH);
+    lv_obj_set_style_text_align(Home_Photo_Item->label_numphoto, LV_TEXT_ALIGN_RIGHT, LV_PART_MAIN);
     lv_obj_add_style(Home_Photo_Item->label_numphoto, &ttf_font_24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(Home_Photo_Item->label_numphoto, lv_color_hex(0xFFFFFF),
         LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(Home_Photo_Item->label_numphoto, LV_ALIGN_TOP_RIGHT, -109, 22);
+    lv_obj_align(Home_Photo_Item->label_numphoto, LV_ALIGN_TOP_RIGHT, -UI_CAMERA_COUNT_RIGHT, UI_CAMERA_TOP + 8);
 
     time_t now = time(NULL);
     struct tm* t = localtime(&now);
 
     // 时间显示
     Home_Photo_Item->label_datatime = lv_label_create(Home_Photo_Item->photoscr);
-    lv_obj_set_pos(Home_Photo_Item->label_datatime, 225, 410);
     lv_label_set_text_fmt(Home_Photo_Item->label_datatime, "%04d/%02d/%02d %02d:%02d:%02d", t->tm_year + 1900, t->tm_mon + 1,
         t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-    lv_label_set_long_mode(Home_Photo_Item->label_datatime, LV_LABEL_LONG_WRAP);
+    lv_label_set_long_mode(Home_Photo_Item->label_datatime, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(Home_Photo_Item->label_datatime, UI_WIDTH - 2 * UI_CAMERA_MARGIN);
+    lv_obj_set_style_text_align(Home_Photo_Item->label_datatime, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
     lv_obj_add_style(Home_Photo_Item->label_datatime, &ttf_font_24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(Home_Photo_Item->label_datatime, lv_color_hex(0xFFFFFF),
         LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(Home_Photo_Item->label_datatime, LV_ALIGN_BOTTOM_MID, 0, -12);
+    lv_obj_align(Home_Photo_Item->label_datatime, LV_ALIGN_BOTTOM_MID, 0, -UI_CAMERA_INFO_BOTTOM);
     if(getSelect_Index() == TIME_FLAG_OFF) {
         lv_obj_add_flag(Home_Photo_Item->label_datatime, LV_OBJ_FLAG_HIDDEN);
     }
@@ -1459,9 +1464,9 @@ void Home_Photo(lv_ui_t *ui)
     lv_obj_add_flag(continuous_count_label_s, LV_OBJ_FLAG_HIDDEN);
 
 
-    Home_Photo_Item->img_selftime = lv_imagebutton_create(Home_Photo_Item->photoscr);
-    lv_obj_align(Home_Photo_Item->img_selftime, LV_ALIGN_TOP_LEFT, 6, 64);
-    lv_obj_set_size(Home_Photo_Item->img_selftime, 58, 58);
+    Home_Photo_Item->img_selftime = ui_image_create(Home_Photo_Item->photoscr);
+    lv_obj_align(Home_Photo_Item->img_selftime, LV_ALIGN_TOP_LEFT, UI_CAMERA_MARGIN, UI_CAMERA_SECOND_ROW);
+    lv_obj_set_size(Home_Photo_Item->img_selftime, UI_CAMERA_ICON_SIZE, UI_CAMERA_ICON_SIZE);
     const char* selftime[] = { "延时.png", "延时2秒.png", "延时5秒.png", "延时10秒.png" };
     show_image(Home_Photo_Item->img_selftime, selftime[get_self_index()]);
     if (get_self_index() == 0 || AIModeSelect_GetMode() != AI_NONE) {
@@ -1469,18 +1474,17 @@ void Home_Photo(lv_ui_t *ui)
     }
 
     //连拍模式
-    Home_Photo_Item->img_shootingmode = lv_imagebutton_create(Home_Photo_Item->photoscr);
+    Home_Photo_Item->img_shootingmode = ui_image_create(Home_Photo_Item->photoscr);
     if (get_self_index() == 0) {
         lv_obj_align(
-            Home_Photo_Item->img_shootingmode, LV_ALIGN_TOP_LEFT, 6, 64);
+            Home_Photo_Item->img_shootingmode, LV_ALIGN_TOP_LEFT, UI_CAMERA_MARGIN, UI_CAMERA_SECOND_ROW);
     } else {
         lv_obj_align(
-            Home_Photo_Item->img_shootingmode, LV_ALIGN_TOP_LEFT, 6, 130);
+            Home_Photo_Item->img_shootingmode, LV_ALIGN_TOP_LEFT, UI_CAMERA_MARGIN, UI_CAMERA_SECOND_ROW + UI_CAMERA_ICON_SIZE + UI_CAMERA_MARGIN);
     }
-    if (get_shootmode(0) != 0 && AIModeSelect_GetMode() == AI_NONE)
-        lv_obj_set_size(Home_Photo_Item->img_shootingmode, 58, 58);
-    else
-        lv_obj_set_size(Home_Photo_Item->img_shootingmode, 0, 58);
+    lv_obj_set_size(Home_Photo_Item->img_shootingmode, UI_CAMERA_ICON_SIZE, UI_CAMERA_ICON_SIZE);
+    if (get_shootmode(0) == 0 || AIModeSelect_GetMode() != AI_NONE)
+        lv_obj_add_flag(Home_Photo_Item->img_shootingmode, LV_OBJ_FLAG_HIDDEN);
     const char *shootmode[] = {"连拍1.png", "连拍3.png", "连拍10.png"};
     show_image(Home_Photo_Item->img_shootingmode, shootmode[get_shootmode(0)]);
     lv_obj_update_layout(Home_Photo_Item->img_shootingmode);
@@ -1563,7 +1567,7 @@ void ai_takephoto_process_res_create(lv_obj_t *parent)
     lv_obj_set_style_shadow_width(ai_process_cont_s, 0, 0);
 
     // 创建结果图片
-    lv_obj_t *ai_process_result_img = lv_img_create(ai_process_cont_s);
+    lv_obj_t *ai_process_result_img = ui_image_create(ai_process_cont_s);
     if(ai_process_result_img == NULL) {
         MLOG_ERR("Failed to create result image\n");
         return;
@@ -1602,17 +1606,17 @@ void ai_takephoto_process_res_create(lv_obj_t *parent)
     // 创建进度指示器
     lv_obj_t *spinner = lv_spinner_create(ai_process_cont_s);
     if(spinner) {
-        lv_obj_set_size(spinner, 60, 60);
+        lv_obj_set_size(spinner, UI_X(60), UI_X(60));
         lv_obj_set_style_arc_width(spinner, 6, 0);
         lv_obj_set_style_arc_color(spinner, lv_color_hex(0x0080FF), 0);
-        lv_obj_align(spinner, LV_ALIGN_CENTER, 0, 60);
+        lv_obj_align(spinner, LV_ALIGN_CENTER, 0, UI_Y(60));
         lv_obj_add_flag(spinner, LV_OBJ_FLAG_HIDDEN);
     }
 
     // AI按钮
     lv_obj_t *ai_btn = lv_imagebutton_create(ai_process_cont_s);
     lv_obj_align(ai_btn, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_obj_set_size(ai_btn, 58, 58);
+    lv_obj_set_size(ai_btn, UI_X(58), UI_X(58));
     lv_obj_add_event_cb(ai_btn, ai_process_select_event_handler, LV_EVENT_CLICKED, NULL);
     const char *mode_icon[] = {"aimoshi.png", "风格_1.png", "AI背景替换_1.png","美颜_1.png","语音_自定义_1.png"};
     show_image(ai_btn, mode_icon[AIModeSelect_GetMode()]);
@@ -1622,7 +1626,7 @@ void ai_takephoto_process_res_create(lv_obj_t *parent)
 
     // 文本模式按钮
     lv_obj_t *text_mode_btn = lv_btn_create(ai_process_cont_s);
-    lv_obj_set_size(text_mode_btn, 58, 58);
+    lv_obj_set_size(text_mode_btn, UI_X(58), UI_X(58));
     lv_obj_align(text_mode_btn, LV_ALIGN_TOP_RIGHT, 0, 0);
     lv_obj_set_style_radius(text_mode_btn, lv_obj_get_style_radius(ai_btn, 0), 0);
     lv_obj_set_style_bg_color(text_mode_btn, lv_obj_get_style_bg_color(ai_btn, 0), 0);
@@ -1648,8 +1652,8 @@ void ai_takephoto_process_res_create(lv_obj_t *parent)
 
     // === 新增：创建删除按钮（右下角）===
     lv_obj_t *delete_btn = lv_btn_create(ai_process_cont_s);
-    lv_obj_set_size(delete_btn, 64, 60);
-    lv_obj_align(delete_btn, LV_ALIGN_BOTTOM_RIGHT, -10, -10); // 右下角位置
+    lv_obj_set_size(delete_btn, UI_X(64), UI_Y(60));
+    lv_obj_align(delete_btn, LV_ALIGN_BOTTOM_RIGHT, UI_X(-10), UI_Y(-10)); // 右下角位置
     lv_obj_set_style_radius(delete_btn, 5, 0); // 圆形按钮
     lv_obj_set_style_bg_color(delete_btn, lv_color_hex(0x171717), 0); // 红色背景
     lv_obj_set_style_bg_opa(delete_btn, LV_OPA_0, 0);
@@ -1666,8 +1670,8 @@ void ai_takephoto_process_res_create(lv_obj_t *parent)
     lv_obj_add_event_cb(delete_btn, delete_ai_result_cb, LV_EVENT_CLICKED, delete_btn);
 
     lv_obj_t *back_btn = lv_button_create(ai_process_cont_s);
-    lv_obj_align(back_btn, LV_ALIGN_BOTTOM_LEFT, 20, -8);
-    lv_obj_set_size(back_btn, 60, 52);
+    lv_obj_align(back_btn, LV_ALIGN_BOTTOM_LEFT, UI_X(20), UI_Y(-8));
+    lv_obj_set_size(back_btn, UI_X(60), UI_Y(52));
     lv_obj_add_style(back_btn, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_event_cb(back_btn, ai_process_float_back_cb, LV_EVENT_CLICKED, back_btn);
 

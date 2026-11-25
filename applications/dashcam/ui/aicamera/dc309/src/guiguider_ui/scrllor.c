@@ -1,3 +1,5 @@
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "lvgl.h"
 #include <stdio.h>
 #include "gui_guider.h"
@@ -8,8 +10,8 @@
 #include "page_all.h"
 
 // 屏幕尺寸定义
-#define SCREEN_WIDTH 640
-#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH UI_WIDTH
+#define SCREEN_HEIGHT UI_HEIGHT
 
 // 全局变量
 lv_obj_t *content;    // 内容容器
@@ -73,9 +75,9 @@ lv_obj_t *create_page(lv_obj_t *parent, int page_num, lv_color_t color)
     lv_obj_center(label);
 
     // 创建图片占位符
-    lv_obj_t *img = lv_img_create(page);
-    lv_obj_set_size(img, 200, 150);
-    lv_obj_align(img, LV_ALIGN_CENTER, 0, 50);
+    lv_obj_t *img = ui_image_create(page);
+    lv_obj_set_size(img, UI_X(200), UI_Y(150));
+    lv_obj_align(img, LV_ALIGN_CENTER, 0, UI_Y(50));
 
     // 图片样式（无实际图片，用背景色代替）
     static lv_style_t img_style;
@@ -114,7 +116,7 @@ void create_control_buttons(lv_obj_t *parent)
 {
     // 创建控制按钮容器
     lv_obj_t *btn_container = lv_obj_create(parent);
-    lv_obj_set_size(btn_container, SCREEN_WIDTH, 60);
+    lv_obj_set_size(btn_container, SCREEN_WIDTH, UI_Y(60));
     lv_obj_set_flex_flow(btn_container, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(btn_container, LV_FLEX_ALIGN_SPACE_AROUND, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
     lv_obj_set_style_bg_color(btn_container, lv_color_hex(0x2c2c2c), 0);
@@ -123,7 +125,7 @@ void create_control_buttons(lv_obj_t *parent)
 
     // 创建上一页按钮
     lv_obj_t *btn_prev = lv_btn_create(btn_container);
-    lv_obj_set_size(btn_prev, 150, 40);
+    lv_obj_set_size(btn_prev, UI_X(150), UI_Y(40));
     lv_obj_add_event_cb(btn_prev, event_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_t *btn_prev_label = lv_label_create(btn_prev);
     lv_label_set_text(btn_prev_label, LV_SYMBOL_LEFT " Previous");
@@ -135,7 +137,7 @@ void create_control_buttons(lv_obj_t *parent)
 
     // 创建下一页按钮
     lv_obj_t *btn_next = lv_btn_create(btn_container);
-    lv_obj_set_size(btn_next, 150, 40);
+    lv_obj_set_size(btn_next, UI_X(150), UI_Y(40));
     lv_obj_add_event_cb(btn_next, event_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_t *btn_next_label = lv_label_create(btn_next);
     lv_label_set_text(btn_next_label, "Next " LV_SYMBOL_RIGHT);
@@ -182,7 +184,7 @@ void lvgl_page_flip_demo()
 
     // 创建标题栏
     lv_obj_t *header = lv_obj_create(main_container);
-    lv_obj_set_size(header, SCREEN_WIDTH, 60);
+    lv_obj_set_size(header, SCREEN_WIDTH, UI_Y(60));
     lv_obj_set_style_bg_color(header, lv_color_hex(0x476e91), 0);
     lv_obj_set_style_border_width(header, 0, 0);
     lv_obj_t *header_label = lv_label_create(header);
@@ -193,7 +195,7 @@ void lvgl_page_flip_demo()
 
     // 创建滚动区域容器
     lv_obj_t *scroll_area = lv_obj_create(main_container);
-    lv_obj_set_size(scroll_area, SCREEN_WIDTH, SCREEN_HEIGHT - 120);
+    lv_obj_set_size(scroll_area, SCREEN_WIDTH, SCREEN_HEIGHT - UI_Y(120));
     lv_obj_set_style_border_width(scroll_area, 0, 0);
     lv_obj_set_style_pad_all(scroll_area, 0, 0);
     lv_obj_set_scrollbar_mode(scroll_area, LV_SCROLLBAR_MODE_OFF);
@@ -201,7 +203,7 @@ void lvgl_page_flip_demo()
 
     // 创建内容容器
     content = lv_obj_create(scroll_area);
-    lv_obj_set_size(content, SCREEN_WIDTH, (SCREEN_HEIGHT - 120) * total_pages);
+    lv_obj_set_size(content, SCREEN_WIDTH, (SCREEN_HEIGHT - UI_Y(120)) * total_pages);
     lv_obj_set_style_border_width(content, 0, 0);
     lv_obj_set_style_pad_all(content, 0, 0);
     lv_obj_set_style_bg_opa(content, LV_OPA_TRANSP, 0);
@@ -214,7 +216,7 @@ void lvgl_page_flip_demo()
     page_colors[2] = lv_color_hex(0xFF9800), page_colors[3] = lv_color_hex(0x9C27B0);
     for(int i = 0; i < total_pages; i++) {
         create_page(content, i, page_colors[i]);
-        lv_obj_align_to(lv_obj_get_child(content, i), content, LV_ALIGN_TOP_LEFT, 0, i * (SCREEN_HEIGHT - 120));
+        lv_obj_align_to(lv_obj_get_child(content, i), content, LV_ALIGN_TOP_LEFT, 0, i * (SCREEN_HEIGHT - UI_Y(120)));
     }
 
     // 创建控制按钮

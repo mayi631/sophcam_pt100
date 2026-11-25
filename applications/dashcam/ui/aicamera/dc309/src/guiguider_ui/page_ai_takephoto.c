@@ -1,4 +1,6 @@
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "common/extract_thumbnail.h"
 #include "common/takephoto.h"
 #include "config.h"
@@ -445,18 +447,18 @@ void create_ai_camera_screen(lv_ui_t* ui)
 
     /* 创建顶部标题栏 */
     lv_obj_t *header = lv_obj_create(page_ai_camera_s);
-    lv_obj_set_size(header, LV_PCT(100), 60);
+    lv_obj_set_size(header, LV_PCT(100), UI_Y(60));
     lv_obj_set_style_bg_color(header, lv_color_hex(0), 0);
     lv_obj_set_style_border_width(header, 0, 0);
     lv_obj_set_style_pad_all(header, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     /* 创建返回按钮 */
     lv_obj_t* back_btn = lv_btn_create(header);
-    lv_obj_set_size(back_btn, 100, 52);
+    lv_obj_set_size(back_btn, UI_X(100), UI_Y(52));
     lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x171717), 0);
     lv_obj_set_style_radius(back_btn, 20, 0);
     lv_obj_set_style_shadow_width(back_btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(back_btn, LV_ALIGN_TOP_LEFT, 4, 4);
+    lv_obj_align(back_btn, LV_ALIGN_TOP_LEFT, UI_X(4), UI_Y(4));
 
     lv_obj_t *back_label = lv_label_create(back_btn);
     lv_label_set_text(back_label, LV_SYMBOL_LEFT);
@@ -472,14 +474,14 @@ void create_ai_camera_screen(lv_ui_t* ui)
     lv_obj_set_style_text_font(title, get_usr_fonts(ALI_PUHUITI_FONTPATH, MENU_FONT_SIZE), 0);
     lv_obj_set_style_text_color(title, lv_color_white(), 0);
     lv_obj_center(title);
-    lv_obj_set_width(title, 200);
+    lv_obj_set_width(title, UI_X(200));
     lv_label_set_long_mode(title, LV_LABEL_LONG_SCROLL);
     lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 音色选择按钮（右侧）
     lv_obj_t* voice_style_btn = lv_btn_create(header);
-    lv_obj_set_size(voice_style_btn, 100, 52);
-    lv_obj_set_pos(voice_style_btn, H_RES - 104, 4); // 右侧位置
+    lv_obj_set_size(voice_style_btn, UI_X(100), UI_Y(52));
+    lv_obj_set_pos(voice_style_btn, H_RES - UI_X(104), UI_Y(4)); // 右侧位置
     lv_obj_set_style_pad_all(voice_style_btn, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(voice_style_btn, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(voice_style_btn, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -495,8 +497,8 @@ void create_ai_camera_screen(lv_ui_t* ui)
     lv_obj_add_event_cb(voice_style_btn, voice_value_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
     voice_man = lv_imagebutton_create(header);
-    lv_obj_align(voice_man, LV_ALIGN_RIGHT_MID, -128, 0);
-    lv_obj_set_size(voice_man, 48, 48);
+    lv_obj_align(voice_man, LV_ALIGN_RIGHT_MID, UI_X(-128), 0);
+    lv_obj_set_size(voice_man, UI_X(48), UI_X(48));
     set_voice_style_icon(voice_man);
     if (get_currindex()) {
         show_image(voice_man, "女声.png");
@@ -506,14 +508,14 @@ void create_ai_camera_screen(lv_ui_t* ui)
     lv_obj_set_style_pad_all(voice_man, 0, LV_STATE_DEFAULT);
     lv_obj_add_event_cb(voice_man, voice_style_btn_event_cb, LV_EVENT_CLICKED, NULL);
     /* 创建相机预览区域 */
-    camera_preview_s = lv_img_create(page_ai_camera_s);
-    lv_obj_set_size(camera_preview_s, H_RES, V_RES - 100);
-    lv_obj_align(camera_preview_s, LV_ALIGN_TOP_MID, 0, 50);
+    camera_preview_s = ui_image_create(page_ai_camera_s);
+    lv_obj_set_size(camera_preview_s, H_RES, V_RES - UI_Y(100));
+    lv_obj_align(camera_preview_s, LV_ALIGN_TOP_MID, 0, UI_Y(50));
     lv_obj_set_style_bg_opa(camera_preview_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 不透明度 0~255，255 完全不透明
 
     create_viewfinder(page_ai_camera_s);
     create_zoom_bar(page_ai_camera_s);
-    create_wifi_img(header, -190, 18);
+    create_wifi_img(header, UI_X(-190), UI_Y(18));
     /* 拍照按键处理回调函数 */
     set_current_page_handler(takephoto_key_handler);
     takephoto_register_menu_callback(aiphoto_menu_callback);
@@ -614,7 +616,7 @@ static void show_recognition_result(void)
 
     /* 创建顶部标题栏 */
     lv_obj_t *header = lv_obj_create(result_page);
-    lv_obj_set_size(header, LV_PCT(100), 60);
+    lv_obj_set_size(header, LV_PCT(100), UI_Y(60));
     lv_obj_set_style_bg_color(header, lv_color_hex(0), 0);
     lv_obj_set_style_bg_opa(header, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align(header, LV_ALIGN_TOP_LEFT, 0, 0);
@@ -624,8 +626,8 @@ static void show_recognition_result(void)
 
     lv_obj_t* back_btn = lv_btn_create(header);
     if (back_btn) {
-        lv_obj_set_size(back_btn, 100, 52);
-        lv_obj_align(back_btn, LV_ALIGN_TOP_LEFT, 4, 4);
+        lv_obj_set_size(back_btn, UI_X(100), UI_Y(52));
+        lv_obj_align(back_btn, LV_ALIGN_TOP_LEFT, UI_X(4), UI_Y(4));
         lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x171717), 0);
         lv_obj_set_style_radius(back_btn, 20, 0);
         lv_obj_set_style_pad_all(back_btn, 0, LV_STATE_DEFAULT);
@@ -655,14 +657,14 @@ static void show_recognition_result(void)
 
     // 在上方添加一条分割线
     lv_obj_t *up_line                       = lv_line_create(result_page);
-    static lv_point_precise_t points_line[] = {{10, 60}, {640, 60}};
+    static lv_point_precise_t points_line[] = {{UI_X(10), UI_Y(60)}, {UI_X(640), UI_Y(60)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);
 
     /* 创建主体内容容器 */
     lv_obj_t *content = lv_obj_create(result_page);
-    lv_obj_set_size(content, LV_PCT(100), V_RES - 62);
+    lv_obj_set_size(content, LV_PCT(100), V_RES - UI_Y(62));
     lv_obj_align(content, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_bg_color(content, lv_color_hex(0), 0);
     lv_obj_set_style_pad_all(content, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -684,10 +686,10 @@ static void show_recognition_result(void)
     char* rel_large = strchr(path_large, '/');
     strncpy(pic_thumbnail, rel_large, sizeof(pic_thumbnail));
     /* 识别图片 */
-    lv_obj_t* result_img = lv_img_create(content);
+    lv_obj_t* result_img = ui_image_create(content);
     if (result_img) {
-        lv_obj_set_size(result_img, 300, 180);
-        lv_obj_align(result_img, LV_ALIGN_LEFT_MID, 10, -40);
+        lv_obj_set_size(result_img, UI_RESULT_WIDTH, UI_RESULT_IMAGE_HEIGHT);
+        lv_obj_align(result_img, LV_ALIGN_TOP_MID, 0, UI_RESULT_PADDING / 2);
         lv_obj_set_style_border_width(result_img, 1, 0);
         lv_obj_set_style_border_color(result_img, lv_color_hex(0x4da6ff), 0);
         lv_obj_set_style_radius(result_img, 0, 0);
@@ -697,8 +699,8 @@ static void show_recognition_result(void)
 
     if (get_play_switch() && is_language_supported_for_tts()) {
         s_reread_btn = lv_btn_create(content);
-        lv_obj_set_size(s_reread_btn, 160, 60);
-        lv_obj_align_to(s_reread_btn, result_img, LV_ALIGN_OUT_BOTTOM_MID, 0, 10);
+        lv_obj_set_size(s_reread_btn, UI_X(200), UI_RESULT_REPLAY_HEIGHT);
+        lv_obj_align_to(s_reread_btn, result_img, LV_ALIGN_OUT_BOTTOM_MID, 0, UI_RESULT_PADDING / 2);
         lv_obj_set_style_bg_color(s_reread_btn, lv_color_hex(0x333333), 0);
         lv_obj_set_style_radius(s_reread_btn, 20, 0);
         lv_obj_set_style_shadow_width(s_reread_btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -708,15 +710,15 @@ static void show_recognition_result(void)
 
         s_reread_label = lv_label_create(s_reread_btn);
         lv_obj_center(s_reread_label);
-        lv_obj_set_width(s_reread_label, 160);
+        lv_obj_set_width(s_reread_label, UI_X(160));
         lv_obj_add_style(s_reread_label, &ttf_font_18, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_text_color(s_reread_label, lv_color_white(), 0);
         lv_label_set_long_mode(s_reread_label, LV_LABEL_LONG_SCROLL);
     }
     /* 右侧文本容器 - 现代化信纸风格 */
     text_cont = lv_obj_create(content);
-    lv_obj_set_size(text_cont, 300, LV_PCT(90));
-    lv_obj_align(text_cont, LV_ALIGN_RIGHT_MID, -10, 0);
+    lv_obj_set_size(text_cont, UI_RESULT_WIDTH, V_RES - UI_Y(62) - UI_RESULT_TEXT_TOP - UI_RESULT_PADDING);
+    lv_obj_align(text_cont, LV_ALIGN_TOP_MID, 0, UI_RESULT_TEXT_TOP);
 
     // 信纸背景样式
     lv_obj_set_style_bg_color(text_cont, lv_color_hex(0xF8F5E6), LV_PART_MAIN);
@@ -728,13 +730,13 @@ static void show_recognition_result(void)
     lv_obj_set_style_shadow_opa(text_cont, LV_OPA_30, LV_PART_MAIN);
     lv_obj_set_style_shadow_width(text_cont, 10, LV_PART_MAIN);
     lv_obj_set_style_shadow_spread(text_cont, 2, LV_PART_MAIN); // 修正：使用正确的函数名
-    lv_obj_set_style_pad_all(text_cont, 8, LV_PART_MAIN);
+    lv_obj_set_style_pad_all(text_cont, UI_X(8), LV_PART_MAIN);
 
     /* 识别结果描述 - 现代化信纸文字 */
     result_desc_label = lv_label_create(text_cont);
     if(result_desc_label) {
         lv_label_set_text(result_desc_label, str_language_recognizing[get_curr_language()]);
-        lv_obj_set_width(result_desc_label, 270);
+        lv_obj_set_width(result_desc_label, LV_PCT(100));
         lv_obj_align(result_desc_label, LV_ALIGN_TOP_LEFT, 0, 0);
 
         // 信纸文字样式
@@ -758,7 +760,7 @@ static void show_recognition_result(void)
     for(int i = 0; i < num_lines; i++) {
         lv_obj_t *line = lv_line_create(text_cont);
         /* 设置线的点：从(0,0)到(270,0) */
-        static lv_point_precise_t points[] = {{0, 0}, {270, 0}};
+        static lv_point_precise_t points[] = {{0, 0}, {UI_X(270), 0}};
         lv_line_set_points(line, points, 2);
         lv_obj_set_style_line_color(line, lv_color_hex(0xE8E0C7), LV_PART_MAIN);
         lv_obj_set_style_line_width(line, 1, LV_PART_MAIN);
@@ -766,16 +768,16 @@ static void show_recognition_result(void)
     }
 
     // 添加信纸角装饰
-    corner_deco = lv_img_create(text_cont);
+    corner_deco = ui_image_create(text_cont);
     show_image(corner_deco, "羽毛笔.png");
-    lv_obj_set_size(corner_deco, 48, 48);
-    lv_obj_align(corner_deco, LV_ALIGN_BOTTOM_RIGHT, -5, -5);
+    lv_obj_set_size(corner_deco, UI_X(48), UI_X(48));
+    lv_obj_align(corner_deco, LV_ALIGN_BOTTOM_RIGHT, UI_X(-5), UI_Y(-5));
     lv_obj_set_style_img_opa(corner_deco, LV_OPA_50, LV_PART_MAIN);
 
     // 音色选择按钮（右侧）
     lv_obj_t* voice_style_btn = lv_btn_create(header);
-    lv_obj_set_size(voice_style_btn, 100, 52);
-    lv_obj_set_pos(voice_style_btn, H_RES - 104, 4); // 右侧位置
+    lv_obj_set_size(voice_style_btn, UI_X(100), UI_Y(52));
+    lv_obj_set_pos(voice_style_btn, H_RES - UI_X(104), UI_Y(4)); // 右侧位置
     lv_obj_set_style_pad_all(voice_style_btn, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(voice_style_btn, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(voice_style_btn, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -789,7 +791,7 @@ static void show_recognition_result(void)
     // 添加设置音量
     lv_obj_add_event_cb(voice_style_btn, voice_value_btn_event_cb, LV_EVENT_CLICKED, NULL);
 
-    create_wifi_img(header, -140, 18);
+    create_wifi_img(header, UI_X(-140), UI_Y(18));
 
     /* 加载结果页面 */
     lv_scr_load(result_page);
@@ -845,7 +847,7 @@ static void delayed_line_adjustment(lv_timer_t* timer)
             lv_coord_t target_y = container_height - icon_height - 5; // 底边距5px
 
             // 设置羽毛笔图标的位置
-            lv_obj_set_pos(corner_deco, 0, target_y+50);
+            lv_obj_set_pos(corner_deco, 0, target_y+UI_Y(50));
             // lv_obj_align(corner_deco, LV_ALIGN_BOTTOM_RIGHT, -5, -5);
 
             MLOG_DBG("Feather icon positioned at (%d, %d), container size: %dx%d\n", target_x, target_y,
@@ -856,7 +858,7 @@ static void delayed_line_adjustment(lv_timer_t* timer)
         for(int i = 0; i < line_count; i++) {
             lv_obj_t *line = lv_line_create(text_cont);
             /* 设置线的点：从(0,0)到(270,0) */
-            static lv_point_precise_t points[] = {{0, 0}, {270, 0}};
+            static lv_point_precise_t points[] = {{0, 0}, {UI_X(270), 0}};
             lv_line_set_points(line, points, 2);
             lv_obj_set_style_line_color(line, lv_color_hex(0xE8E0C7), LV_PART_MAIN);
             lv_obj_set_style_line_width(line, 1, LV_PART_MAIN);

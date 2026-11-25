@@ -7,6 +7,7 @@
  * terms, then you may not retain, install, activate or otherwise use the software.
  */
 
+#include "ui_layout.h"
 #include "config.h"
 #include "custom.h"
 #include "gui_guider.h"
@@ -232,7 +233,7 @@ void sysMenu_screenoff(lv_ui_t *ui)
 
     // Write codes scr
     obj_sysMenu_screenoff_s = lv_obj_create(NULL);
-    lv_obj_set_size(obj_sysMenu_screenoff_s, 640, 480);
+    lv_obj_set_size(obj_sysMenu_screenoff_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_sysMenu_screenoff_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_pad_all(obj_sysMenu_screenoff_s, 0, 0);
 
@@ -246,14 +247,14 @@ void sysMenu_screenoff(lv_ui_t *ui)
     // Write codes cont_top (顶部栏)
     lv_obj_t *cont_top = lv_obj_create(obj_sysMenu_screenoff_s);
     lv_obj_set_pos(cont_top, 0, 0);
-    lv_obj_set_size(cont_top, 640, 60);
+    lv_obj_set_size(cont_top, UI_X(640), UI_Y(60));
     lv_obj_set_scrollbar_mode(cont_top, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(cont_top, &style_common_cont_top, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // Write codes btn_back (返回按钮)
     lv_obj_t* btn_back = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_back, 4, 4);
-    lv_obj_set_size(btn_back, 100, 52);
+    lv_obj_set_pos(btn_back, UI_X(4), UI_Y(4));
+    lv_obj_set_size(btn_back, UI_X(100), UI_Y(52));
     lv_obj_add_style(btn_back, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_event_cb(btn_back, screen_Settingscreenoff_btn_back_event_handler, LV_EVENT_CLICKED, ui);
 
@@ -274,11 +275,11 @@ void sysMenu_screenoff(lv_ui_t *ui)
     lv_obj_align(title, LV_ALIGN_CENTER, 0, 0);
     // Write codes cont_settings (设置选项容器)
     lv_obj_t *cont_settings = lv_obj_create(obj_sysMenu_screenoff_s);
-    lv_obj_set_size(cont_settings, 600, MENU_CONT_SIZE);
-    lv_obj_align(cont_settings, LV_ALIGN_TOP_MID, 0, 64);
+    lv_obj_set_size(cont_settings, UI_X(600), UI_Y(MENU_CONT_SIZE));
+    lv_obj_align(cont_settings, LV_ALIGN_TOP_MID, 0, UI_Y(64));
     lv_obj_set_style_bg_opa(cont_settings, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(cont_settings, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_all(cont_settings, 10, 0);
+    lv_obj_set_style_pad_all(cont_settings, UI_X(10), 0);
 
     // 创建设置按钮
     const char *btn_labels[] = {str_language_on[get_curr_language()], str_language_off[get_curr_language()]};
@@ -287,8 +288,8 @@ void sysMenu_screenoff(lv_ui_t *ui)
         lv_obj_t *btn = lv_button_create(cont_settings);
         if(!btn) continue; // 如果按钮创建失败则跳过
 
-        lv_obj_set_size(btn, 560, MENU_BTN_SIZE);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, (MENU_BTN_SIZE + 10) * i);
+        lv_obj_set_size(btn, UI_X(560), UI_Y(MENU_BTN_SIZE));
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, UI_Y((MENU_BTN_SIZE + 10) * i));
         lv_obj_set_style_bg_opa(btn, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -321,10 +322,10 @@ void sysMenu_screenoff(lv_ui_t *ui)
         lv_obj_t *line = lv_line_create(cont_settings);
         int y_position = (MENU_BTN_SIZE + 10) * (i + 1) - 4; // 计算y坐标  //横线在下方,且第一个btn不用画线
         // 使用点数组池中的第i组
-        line_points_pool[i][0].x = 10;
-        line_points_pool[i][0].y = y_position;
-        line_points_pool[i][1].x = 570;
-        line_points_pool[i][1].y = y_position;
+        line_points_pool[i][0].x = UI_X(10);
+        line_points_pool[i][0].y = UI_Y(y_position);
+        line_points_pool[i][1].x = UI_X(570);
+        line_points_pool[i][1].y = UI_Y(y_position);
         lv_line_set_points(line, line_points_pool[i], 2);
         lv_obj_set_style_line_width(line, 2, 0);
         lv_obj_set_style_line_color(line, lv_color_hex(0x5F5F5F), 0);
@@ -332,7 +333,7 @@ void sysMenu_screenoff(lv_ui_t *ui)
     // 先设置焦点控件,再进行滚动,否则会直接滚动到最下,不知什么原因.
     lv_group_focus_obj(lv_obj_get_child(cont_settings, screenoff_Current_Index_s));
     lv_obj_add_state(lv_obj_get_child(cont_settings, screenoff_Current_Index_s), LV_STATE_FOCUS_KEY);
-    lv_obj_scroll_to_y(cont_settings, ((screenoff_Current_Index_s / 2) * MENU_BTN_SIZE), LV_ANIM_OFF);
+    lv_obj_scroll_to_y(cont_settings, UI_Y(((screenoff_Current_Index_s / 2) * MENU_BTN_SIZE)), LV_ANIM_OFF);
     // 获取焦点控件
     lv_obj_t *chlid = lv_obj_get_child(cont_settings, screenoff_Current_Index_s);
     // 设置焦点标签颜色
@@ -340,7 +341,7 @@ void sysMenu_screenoff(lv_ui_t *ui)
 
     // 在上方添加一条分割线
     lv_obj_t *up_line                       = lv_line_create(obj_sysMenu_screenoff_s);
-    static lv_point_precise_t points_line[] = {{10, 60}, {640, 60}};
+    static lv_point_precise_t points_line[] = {{UI_X(10), UI_Y(60)}, {UI_X(640), UI_Y(60)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);

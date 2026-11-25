@@ -2,6 +2,8 @@
 // #############################################################################
 // ! #region 1. 头文件与宏定义
 // #############################################################################
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "wifi_img.h"
 #include "common/extract_thumbnail.h"
 #include "common/takephoto.h"
@@ -102,8 +104,8 @@ int wifi_level_from_dbm(int dbm)
 void create_wifi_img(lv_obj_t* parent, int32_t x_ofs, int32_t y_ofs)
 {
     MLOG_DBG("create_wifi_img");
-    s_img_wifi = lv_img_create(parent);
-    lv_obj_set_size(s_img_wifi, 24, 23);
+    s_img_wifi = ui_image_create(parent);
+    lv_obj_set_size(s_img_wifi, UI_X(24), UI_Y(23));
     lv_obj_align(s_img_wifi, LV_ALIGN_TOP_RIGHT, x_ofs, y_ofs);
     lv_obj_set_style_pad_all(s_img_wifi, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_image_recolor(s_img_wifi, lv_color_hex(0xFFFFFF), LV_PART_MAIN);

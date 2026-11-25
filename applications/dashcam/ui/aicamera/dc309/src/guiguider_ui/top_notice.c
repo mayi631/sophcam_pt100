@@ -2,6 +2,7 @@
 // ! #region 1. 头文件与宏定义
 // #############################################################################
 
+#include "ui_layout.h"
 #include "top_notice.h"
 #include "custom.h"
 #include "style_common.h"
@@ -106,7 +107,7 @@ static void top_notice_show_impl(const char* text, top_notice_type_t type, uint3
     lv_obj_update_layout(g_top_notice->container);
     lv_obj_clear_flag(g_top_notice->container, LV_OBJ_FLAG_HIDDEN);
     lv_obj_move_foreground(g_top_notice->container);
-    lv_obj_align(g_top_notice->container, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_align(g_top_notice->container, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-24));
 
     if (duration_ms == 0U) {
         duration_ms = TOP_NOTICE_DEFAULT_MS;
@@ -255,7 +256,7 @@ static void top_notice_create(void)
     lv_obj_add_flag(g_top_notice->container, LV_OBJ_FLAG_HIDDEN);
     lv_obj_add_flag(g_top_notice->container, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_clear_flag(g_top_notice->container, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_align(g_top_notice->container, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_align(g_top_notice->container, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-24));
 
     g_top_notice->label = lv_label_create(g_top_notice->container);
     lv_label_set_long_mode(g_top_notice->label, LV_LABEL_LONG_WRAP);

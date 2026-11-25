@@ -1,4 +1,5 @@
 
+#include "ui_layout.h"
 #include "lvgl.h"
 #include <stdio.h>
 #include "gui_guider.h"
@@ -79,8 +80,8 @@ void create_zoom_bar(lv_obj_t* parent)
 
     // 创建容器
     zoom_bar.cont = lv_obj_create(parent);
-    lv_obj_set_size(zoom_bar.cont, 50, 200); // 宽度50，高度200（竖向）
-    lv_obj_align(zoom_bar.cont, LV_ALIGN_RIGHT_MID, -20, 0); // 右侧居中，距离右边20像素
+    lv_obj_set_size(zoom_bar.cont, UI_X(50), UI_Y(200)); // 宽度50，高度200（竖向）
+    lv_obj_align(zoom_bar.cont, LV_ALIGN_RIGHT_MID, UI_X(-20), 0); // 右侧居中，距离右边20像素
     lv_obj_set_style_bg_opa(zoom_bar.cont, LV_OPA_20, 0);
     lv_obj_set_style_bg_color(zoom_bar.cont, lv_color_black(), 0);
     lv_obj_set_style_border_width(zoom_bar.cont, 0, 0);
@@ -90,7 +91,7 @@ void create_zoom_bar(lv_obj_t* parent)
 
     // 创建进度条（竖向）
     zoom_bar.bar = lv_bar_create(zoom_bar.cont);
-    lv_obj_set_size(zoom_bar.bar, 10, 180); // 宽度10，高度180（竖向）
+    lv_obj_set_size(zoom_bar.bar, UI_X(10), UI_Y(180)); // 宽度10，高度180（竖向）
     lv_bar_set_mode(zoom_bar.bar, LV_ARC_MODE_NORMAL); // 设置为垂直方向
     lv_obj_align(zoom_bar.bar, LV_ALIGN_CENTER, 0, 0); // 在容器中居中
     lv_bar_set_range(zoom_bar.bar, 1, 16);

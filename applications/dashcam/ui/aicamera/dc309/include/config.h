@@ -2,11 +2,13 @@
 #define __CONFIG_H_
 
 #include "mlog.h"
+#include "ui_layout.h"
 
 /************************** 屏幕相关 ******************************************/
 #define FB_DEV_NAME "/dev/fb0"
-#define H_RES 640 /* 水平分辨率 */
-#define V_RES 480 /* 垂直分辨率 */
+#define FB_ROTATION LV_DISPLAY_ROTATION_180
+#define H_RES UI_WIDTH /* 水平分辨率 */
+#define V_RES UI_HEIGHT /* 垂直分辨率 */
 #define DISP_BUF_SIZE (H_RES * V_RES)
 
 /************************** INPUT EVENT 对应的文件路径 ************************/

@@ -1,4 +1,5 @@
 #define DEBUG
+#include "ui_layout.h"
 #include "lvgl.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -366,8 +367,8 @@ void voice_setting_arc_create(void)
     }
     // 创建自定义的垂直进度条
     voice_set_bar = lv_bar_create(lv_scr_act());
-    lv_obj_set_size(voice_set_bar, 50, 250);
-    lv_obj_align(voice_set_bar, LV_ALIGN_RIGHT_MID, -20, 0);
+    lv_obj_set_size(voice_set_bar, UI_X(50), UI_Y(250));
+    lv_obj_align(voice_set_bar, LV_ALIGN_RIGHT_MID, UI_X(-20), 0);
     lv_bar_set_range(voice_set_bar, 0, HALF_MAX_VOLUME);
     lv_bar_set_value(voice_set_bar, volume_level, LV_ANIM_OFF); // 设置初始值
 
@@ -389,7 +390,7 @@ void voice_setting_arc_create(void)
 
     // 添加一个标签显示当前值
     value_label = lv_label_create(lv_scr_act());
-    lv_obj_align_to(value_label, voice_set_bar, LV_ALIGN_OUT_BOTTOM_MID, 4, 10);
+    lv_obj_align_to(value_label, voice_set_bar, LV_ALIGN_OUT_BOTTOM_MID, UI_X(4), UI_Y(10));
     lv_label_set_text_fmt(value_label, "%d%%",(lv_bar_get_value(voice_set_bar) * 100) / HALF_MAX_VOLUME );
     lv_obj_set_style_text_color(value_label, lv_color_white(), 0);
     lv_obj_set_style_text_font(value_label, get_usr_fonts(ALI_PUHUITI_FONTPATH, 20), 0);

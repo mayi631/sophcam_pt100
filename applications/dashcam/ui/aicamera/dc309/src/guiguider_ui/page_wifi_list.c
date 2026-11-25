@@ -2,6 +2,8 @@
 // ! #region 1. 头文件与宏定义
 // #############################################################################
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "page_wifi_list.h"
 #include "batter_low_tips.h"
 #include "config.h"
@@ -171,17 +173,17 @@ static void append_wifi_list_item(page_wifi_list_data_t* data, int index)
         lv_obj_add_style(label, &NORMAL_SIZE, LV_PART_MAIN);
         lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_LEFT, LV_PART_MAIN);
         lv_obj_set_width(label, lv_pct(78));
-        lv_obj_align(label, LV_ALIGN_LEFT_MID, 44, 0);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, UI_X(44), 0);
     }
 
     if (ap->is_connected) {
-        lv_obj_t* connected_icon = lv_img_create(btn);
+        lv_obj_t* connected_icon = ui_image_create(btn);
         lv_img_set_src(connected_icon, "A:" RES_ICON_PATH "/check.png");
-        lv_obj_align(connected_icon, LV_ALIGN_RIGHT_MID, -10, 0);
+        lv_obj_align(connected_icon, LV_ALIGN_RIGHT_MID, UI_X(-10), 0);
     } else if (ap->is_saved) {
-        lv_obj_t* saved_icon = lv_img_create(btn);
+        lv_obj_t* saved_icon = ui_image_create(btn);
         lv_img_set_src(saved_icon, "A:" RES_ICON_PATH "/wifi-saved-unlock.png");
-        lv_obj_align(saved_icon, LV_ALIGN_RIGHT_MID, -10, 0);
+        lv_obj_align(saved_icon, LV_ALIGN_RIGHT_MID, UI_X(-10), 0);
     }
 
     lv_obj_set_user_data(btn, ap);
@@ -1026,13 +1028,13 @@ void sysMenu_WifiList(lv_ui_t* ui)
     /* 顶部导航栏容器。 */
     data->nav_bar = lv_obj_create(data->container);
     lv_obj_set_width(data->nav_bar, lv_pct(100));
-    lv_obj_set_height(data->nav_bar, 60);
+    lv_obj_set_height(data->nav_bar, UI_Y(60));
     lv_obj_set_scrollbar_mode(data->nav_bar, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(data->nav_bar, &style_common_cont_top, LV_PART_MAIN);
 
     back_btn = lv_button_create(data->nav_bar);
-    lv_obj_set_pos(back_btn, 4, 4);
-    lv_obj_set_size(back_btn, 100, 52);
+    lv_obj_set_pos(back_btn, UI_X(4), UI_Y(4));
+    lv_obj_set_size(back_btn, UI_X(100), UI_Y(52));
     lv_obj_add_event_cb(back_btn, wifi_back_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_add_style(back_btn, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
 
@@ -1046,28 +1048,28 @@ void sysMenu_WifiList(lv_ui_t* ui)
     /* 导航栏标题。 */
     title_label = lv_label_create(data->nav_bar);
     lv_label_set_text(title_label, str_language_wifi_list[get_curr_language()]);
-    lv_obj_set_size(title_label, 160, 52);
+    lv_obj_set_size(title_label, UI_X(160), UI_Y(52));
     lv_label_set_long_mode(title_label, LV_LABEL_LONG_SCROLL);
     lv_obj_add_style(title_label, &NORMAL_SIZE, LV_PART_MAIN);
-    lv_obj_align(title_label, LV_ALIGN_CENTER, 0, 10);
+    lv_obj_align(title_label, LV_ALIGN_CENTER, 0, UI_Y(10));
 
     /* 右上角刷新按钮。 */
     data->refresh_btn = lv_btn_create(data->nav_bar);
-    lv_obj_set_size(data->refresh_btn, 100, 52);
+    lv_obj_set_size(data->refresh_btn, UI_X(100), UI_Y(52));
     lv_obj_add_style(data->refresh_btn, &style_common_btn_back, LV_PART_MAIN);
     // lv_obj_set_style_radius(data->refresh_btn, 8, LV_PART_MAIN);
-    lv_obj_align(data->refresh_btn, LV_ALIGN_RIGHT_MID, -20, 0);
+    lv_obj_align(data->refresh_btn, LV_ALIGN_RIGHT_MID, UI_X(-20), 0);
     lv_obj_add_event_cb(data->refresh_btn, refresh_btn_click_cb, LV_EVENT_CLICKED, data);
 
     /* 刷新按钮图标。 */
-    refresh_icon = lv_img_create(data->refresh_btn);
+    refresh_icon = ui_image_create(data->refresh_btn);
     lv_img_set_src(refresh_icon, "A:" RES_ICON_PATH "/refresh.png");
     lv_obj_align(refresh_icon, LV_ALIGN_CENTER, 0, 0);
 
     /* 右上角 WiFi 开关。 */
     data->wifi_switch = lv_switch_create(data->nav_bar);
-    lv_obj_set_size(data->wifi_switch, 80, 52);
-    lv_obj_align_to(data->wifi_switch, title_label, LV_ALIGN_OUT_RIGHT_MID, 10, -10);
+    lv_obj_set_size(data->wifi_switch, UI_X(80), UI_Y(52));
+    lv_obj_align_to(data->wifi_switch, title_label, LV_ALIGN_OUT_RIGHT_MID, UI_X(10), UI_Y(-10));
     /* 获取 WiFi 状态并设置开关 */
     data->wifi_enabled = wifi_manager_get_status() == 1 ? 1 : 0;
     if (data->wifi_enabled) {
@@ -1087,23 +1089,23 @@ void sysMenu_WifiList(lv_ui_t* ui)
     /* 密码输入面板。 */
     data->password_panel = lv_obj_create(data->password_modal_mask);
     lv_obj_set_width(data->password_panel, LV_PCT(92));
-    lv_obj_set_height(data->password_panel, 170);
+    lv_obj_set_height(data->password_panel, UI_Y(170));
     lv_obj_add_style(data->password_panel, &style_modal_panel, LV_PART_MAIN);
     lv_obj_clear_flag(data->password_panel, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(data->password_panel, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_align(data->password_panel, LV_ALIGN_TOP_MID, 0, 50);
+    lv_obj_align(data->password_panel, LV_ALIGN_TOP_MID, 0, UI_Y(50));
 
     /* 面板标题（显示当前输入的 SSID）。 */
     data->password_ssid_label = lv_label_create(data->password_panel);
     lv_label_set_text(data->password_ssid_label, str_language_input_password_text[get_curr_language()]);
     lv_obj_add_style(data->password_ssid_label, &SMALL_SIZE, LV_PART_MAIN);
-    lv_obj_align(data->password_ssid_label, LV_ALIGN_TOP_LEFT, 12, 10);
+    lv_obj_align(data->password_ssid_label, LV_ALIGN_TOP_LEFT, UI_X(12), UI_Y(10));
 
     /* 密码输入框。 */
     data->password_ta = lv_textarea_create(data->password_panel);
     lv_obj_set_width(data->password_ta, LV_PCT(94));
-    lv_obj_set_height(data->password_ta, 46);
-    lv_obj_align(data->password_ta, LV_ALIGN_TOP_MID, 0, 44);
+    lv_obj_set_height(data->password_ta, UI_Y(46));
+    lv_obj_align(data->password_ta, LV_ALIGN_TOP_MID, 0, UI_Y(44));
     lv_obj_clear_flag(data->password_ta, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_scrollbar_mode(data->password_ta, LV_SCROLLBAR_MODE_OFF);
     lv_textarea_set_one_line(data->password_ta, true);
@@ -1119,8 +1121,8 @@ void sysMenu_WifiList(lv_ui_t* ui)
 
     /* 取消按钮。 */
     data->password_cancel_btn = lv_btn_create(data->password_panel);
-    lv_obj_set_size(data->password_cancel_btn, 112, 38);
-    lv_obj_align(data->password_cancel_btn, LV_ALIGN_BOTTOM_LEFT, 12, 2);
+    lv_obj_set_size(data->password_cancel_btn, UI_X(112), UI_Y(38));
+    lv_obj_align(data->password_cancel_btn, LV_ALIGN_BOTTOM_LEFT, UI_X(12), 2);
     lv_obj_add_event_cb(data->password_cancel_btn, password_cancel_btn_cb, LV_EVENT_CLICKED, data);
     /* 取消按钮文字。 */
     cancel_label = lv_label_create(data->password_cancel_btn);
@@ -1130,8 +1132,8 @@ void sysMenu_WifiList(lv_ui_t* ui)
 
     /* 确认按钮。 */
     data->password_confirm_btn = lv_btn_create(data->password_panel);
-    lv_obj_set_size(data->password_confirm_btn, 112, 38);
-    lv_obj_align(data->password_confirm_btn, LV_ALIGN_BOTTOM_RIGHT, -12, 2);
+    lv_obj_set_size(data->password_confirm_btn, UI_X(112), UI_Y(38));
+    lv_obj_align(data->password_confirm_btn, LV_ALIGN_BOTTOM_RIGHT, UI_X(-12), 2);
     lv_obj_add_event_cb(data->password_confirm_btn, password_confirm_btn_cb, LV_EVENT_CLICKED, data);
     /* 确认按钮文字。 */
     confirm_label = lv_label_create(data->password_confirm_btn);
@@ -1142,17 +1144,17 @@ void sysMenu_WifiList(lv_ui_t* ui)
     /* 屏幕底部密码键盘。 */
     data->password_kb = lv_keyboard_create(data->password_modal_mask);
     lv_obj_set_width(data->password_kb, LV_PCT(100));
-    lv_obj_set_height(data->password_kb, 220);
+    lv_obj_set_height(data->password_kb, UI_Y(220));
     lv_obj_align(data->password_kb, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_style_bg_opa(data->password_kb, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_set_style_bg_color(data->password_kb, lv_color_hex(0x121212), LV_PART_MAIN);
     lv_obj_set_style_border_width(data->password_kb, 0, LV_PART_MAIN);
-    lv_obj_set_style_pad_top(data->password_kb, 4, LV_PART_MAIN);
-    lv_obj_set_style_pad_bottom(data->password_kb, 4, LV_PART_MAIN);
-    lv_obj_set_style_pad_left(data->password_kb, 4, LV_PART_MAIN);
-    lv_obj_set_style_pad_right(data->password_kb, 4, LV_PART_MAIN);
-    lv_obj_set_style_pad_row(data->password_kb, 3, LV_PART_MAIN);
-    lv_obj_set_style_pad_column(data->password_kb, 3, LV_PART_MAIN);
+    lv_obj_set_style_pad_top(data->password_kb, UI_Y(4), LV_PART_MAIN);
+    lv_obj_set_style_pad_bottom(data->password_kb, UI_Y(4), LV_PART_MAIN);
+    lv_obj_set_style_pad_left(data->password_kb, UI_X(4), LV_PART_MAIN);
+    lv_obj_set_style_pad_right(data->password_kb, UI_X(4), LV_PART_MAIN);
+    lv_obj_set_style_pad_row(data->password_kb, UI_Y(3), LV_PART_MAIN);
+    lv_obj_set_style_pad_column(data->password_kb, UI_X(3), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(data->password_kb, LV_OPA_COVER, LV_PART_ITEMS);
     lv_obj_set_style_bg_color(data->password_kb, lv_color_hex(0x2A2A2A), LV_PART_ITEMS);
     lv_obj_set_style_bg_color(data->password_kb, lv_color_hex(0x3A3A3A), LV_PART_ITEMS | LV_STATE_PRESSED);

@@ -7,6 +7,8 @@
  * terms, then you may not retain, install, activate or otherwise use the software.
  */
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "lvgl.h"
 #include <stdio.h>
 #include "gui_guider.h"
@@ -39,8 +41,8 @@ static lv_obj_t *btn_vialbum_s;//视频按钮
 static lv_obj_t *cont_album_grid_s;
 static lv_obj_t *scrollbar_slider_s;
 
-#define GRID_ITEM_WIDTH 200
-#define GRID_ITEM_HEIGHT 140
+#define GRID_ITEM_WIDTH UI_X(200)
+#define GRID_ITEM_HEIGHT UI_Y(140)
 
 #define THUMBNAIL_WIDTH 640
 #define THUMBNAIL_HEIGHT 480
@@ -99,8 +101,8 @@ static void create_filename_label(void)
 {
     // 创建文件名容器
     cont_filename_s = lv_obj_create(lv_obj_get_child(obj_Aibum_s, 0));
-    lv_obj_set_size(cont_filename_s, 160, 50);
-    lv_obj_set_pos(cont_filename_s, 400, 14);
+    lv_obj_set_size(cont_filename_s, UI_X(160), UI_Y(50));
+    lv_obj_set_pos(cont_filename_s, UI_X(400), UI_Y(14));
     lv_obj_set_style_bg_opa(cont_filename_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(cont_filename_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_all(cont_filename_s, 0, LV_STATE_DEFAULT);
@@ -111,7 +113,7 @@ static void create_filename_label(void)
     lv_label_set_text(label_current_filename_s, "");
     lv_label_set_long_mode(label_current_filename_s, LV_LABEL_LONG_SCROLL);
     lv_obj_align(label_current_filename_s, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_obj_set_size(label_current_filename_s, 160, 50);
+    lv_obj_set_size(label_current_filename_s, UI_X(160), UI_Y(50));
     lv_obj_set_style_pad_all(label_current_filename_s, 0, LV_STATE_DEFAULT);
     // 设置样式
     lv_obj_set_style_text_color(label_current_filename_s, lv_color_hex(0xFFFFFF),
@@ -653,14 +655,14 @@ static void load_page(int page_index)
             lv_obj_clear_flag(img_container, LV_OBJ_FLAG_SCROLLABLE);
 
             // 创建图片控件
-            lv_obj_t *img = lv_img_create(img_container);
+            lv_obj_t *img = ui_image_create(img_container);
             lv_obj_set_size(img, GRID_ITEM_WIDTH, GRID_ITEM_HEIGHT);
             lv_obj_set_style_bg_opa(img, LV_OPA_TRANSP, LV_PART_MAIN);
             lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
 
 
-            lv_obj_t *select_img = lv_img_create(img_container);
-            lv_obj_set_size(select_img, 32,32);
+            lv_obj_t *select_img = ui_image_create(img_container);
+            lv_obj_set_size(select_img, UI_X(32),UI_X(32));
             lv_obj_set_style_bg_opa(select_img, LV_OPA_TRANSP, LV_PART_MAIN);
             lv_obj_align(select_img, LV_ALIGN_TOP_LEFT, 2, 0);
             show_image(select_img,"未选中.png");
@@ -697,7 +699,7 @@ static void load_page(int page_index)
                 lv_obj_set_style_bg_opa(duration_label, LV_OPA_50, 0);
                 lv_obj_set_style_bg_color(duration_label, lv_color_black(), 0);
                 lv_obj_set_style_pad_all(duration_label, 2, 0);
-                lv_obj_align(duration_label, LV_ALIGN_BOTTOM_LEFT, 5, -5);
+                lv_obj_align(duration_label, LV_ALIGN_BOTTOM_LEFT, UI_X(5), UI_Y(-5));
 
                 // 保存大缩略图路径到用户数据，用于详情视图
                 char *large_thumb_copy = strdup(filename);
@@ -735,7 +737,7 @@ static void load_page(int page_index)
 
     // 更新滑动条位置（添加安全检查）
     if(scrollbar_slider_s && lv_obj_is_valid(scrollbar_slider_s)) {
-        lv_obj_set_pos(scrollbar_slider_s, 625, 60 + g_slider_height * g_current_page);
+        lv_obj_set_pos(scrollbar_slider_s, UI_X(625), UI_Y(60) + g_slider_height * g_current_page);
     }
 
     // 设置加载标志，避免触发滚动事件
@@ -1182,7 +1184,7 @@ void init_album_cont(lv_obj_t *parent, lv_ui_t *ui)
     // 设置Flex布局间距
     lv_obj_set_style_pad_row(parent, 2, 0);     // 行间距5像素
     lv_obj_set_style_pad_column(parent, 2, 0);  // 列间距5像素
-    lv_obj_set_style_pad_left(parent, 14, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_left(parent, UI_X(14), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 设置滚动边界，防止过度滚动
     lv_obj_set_scroll_snap_y(parent, LV_SCROLL_SNAP_START);
@@ -1191,10 +1193,10 @@ void init_album_cont(lv_obj_t *parent, lv_ui_t *ui)
     lv_obj_set_style_bg_opa(parent, LV_OPA_TRANSP, LV_PART_SCROLLBAR);
 
     // 更新滑动条大小和位置（添加安全检查）
-    g_slider_height = 420 / g_total_pages;
+    g_slider_height = UI_Y(420) / g_total_pages;
     if(scrollbar_slider_s && lv_obj_is_valid(scrollbar_slider_s)) {
-        lv_obj_set_size(scrollbar_slider_s, 12, g_slider_height);
-        lv_obj_set_pos(scrollbar_slider_s, 625, 60 + g_slider_height * g_current_page);
+        lv_obj_set_size(scrollbar_slider_s, UI_X(12), g_slider_height);
+        lv_obj_set_pos(scrollbar_slider_s, UI_X(625), UI_Y(60) + g_slider_height * g_current_page);
     }
 
     // 设置当前页面的按键处理器
@@ -1491,14 +1493,14 @@ static void screen_PhotoAlbum_btn_delete_s_event_handler(lv_event_t* e)
 
             if(g_total_pages > 0) {
                 // 重新计算滑动条高度（确保均匀分布）
-                g_slider_height = 420 / g_total_pages; // 总高度420像素除以总页数
+                g_slider_height = UI_Y(420) / g_total_pages;
 
                 // 确保滑动条高度不会太小
                 if(g_slider_height < 20) {
                     g_slider_height = 20; // 最小高度
                 }
-                if(g_slider_height > 420) {
-                    g_slider_height = 420; // 最大高度
+                if(g_slider_height > UI_Y(420)) {
+                    g_slider_height = UI_Y(420);
                 }
 
                 MLOG_DBG("重新计算滑动条: 总页数=%d, 滑动条高度=%d, 当前页=%d\n", g_total_pages, g_slider_height,
@@ -1510,20 +1512,20 @@ static void screen_PhotoAlbum_btn_delete_s_event_handler(lv_event_t* e)
             // 更新滑动条大小和位置
             if(scrollbar_slider_s && lv_obj_is_valid(scrollbar_slider_s)) {
                 // 首先更新滑动条大小
-                lv_obj_set_size(scrollbar_slider_s, 12, g_slider_height);
+                lv_obj_set_size(scrollbar_slider_s, UI_X(12), g_slider_height);
 
                 // 然后计算并设置滑动条位置
-                int slider_y_pos = 60 + (g_slider_height * g_current_page);
+                int slider_y_pos = UI_Y(60) + (g_slider_height * g_current_page);
 
                 // 确保位置不会超出边界
-                if(slider_y_pos < 60) {
-                    slider_y_pos = 60;
+                if(slider_y_pos < UI_Y(60)) {
+                    slider_y_pos = UI_Y(60);
                 }
-                if(slider_y_pos > 480) { // 480是屏幕高度
-                    slider_y_pos = 480 - g_slider_height;
+                if(slider_y_pos + g_slider_height > UI_HEIGHT) {
+                    slider_y_pos = UI_HEIGHT - g_slider_height;
                 }
 
-                lv_obj_set_pos(scrollbar_slider_s, 625, slider_y_pos);
+                lv_obj_set_pos(scrollbar_slider_s, UI_X(625), slider_y_pos);
 
                 MLOG_DBG("滑动条位置更新: x=625, y=%d, 高度=%d\n", slider_y_pos, g_slider_height);
             }
@@ -1716,7 +1718,7 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
 
     // Write codes scr
     obj_Aibum_s = lv_obj_create(NULL);
-    lv_obj_set_size(obj_Aibum_s, 640, 480);
+    lv_obj_set_size(obj_Aibum_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_Aibum_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_color(obj_Aibum_s, lv_color_hex(0), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_event_cb(obj_Aibum_s, gesture_event_handler, LV_EVENT_GESTURE, ui);
@@ -1727,7 +1729,7 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
     // Write codes cont_top
     lv_obj_t *cont_top = lv_obj_create(obj_Aibum_s);
     lv_obj_set_pos(cont_top, 0, 0);
-    lv_obj_set_size(cont_top, 640, 52);
+    lv_obj_set_size(cont_top, UI_X(640), UI_Y(52));
     lv_obj_set_scrollbar_mode(cont_top, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(cont_top, &style_common_cont_top, LV_PART_MAIN | LV_STATE_DEFAULT);
 
@@ -1736,8 +1738,8 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
 
     // Write codes btn_delete_s
     btn_delete_s = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_delete_s, 420, 2);
-    lv_obj_set_size(btn_delete_s, 100, 48);
+    lv_obj_set_pos(btn_delete_s, UI_X(420), 2);
+    lv_obj_set_size(btn_delete_s, UI_X(100), UI_Y(48));
     lv_obj_add_flag(btn_delete_s, LV_OBJ_FLAG_HIDDEN);
 
     lv_obj_t* label_delete = lv_label_create(btn_delete_s);
@@ -1759,8 +1761,8 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
     lv_obj_set_style_text_align(btn_delete_s, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     btn_delete_all_s = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_delete_all_s, 312, 2);
-    lv_obj_set_size(btn_delete_all_s, 100, 48);
+    lv_obj_set_pos(btn_delete_all_s, UI_X(312), 2);
+    lv_obj_set_size(btn_delete_all_s, UI_X(100), UI_Y(48));
     // lv_obj_add_flag(btn_delete_all_s, LV_OBJ_FLAG_HIDDEN);
     lv_obj_set_style_text_opa(btn_delete_all_s, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_all(btn_delete_all_s, 0, LV_STATE_DEFAULT);
@@ -1772,8 +1774,8 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
 
     // Write codes btn_back
     lv_obj_t* btn_back = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_back, 4, 2);
-    lv_obj_set_size(btn_back, 100, 48);
+    lv_obj_set_pos(btn_back, UI_X(4), 2);
+    lv_obj_set_size(btn_back, UI_X(100), UI_Y(48));
     lv_obj_add_event_cb(btn_back, screen_PhotoAlbum_btn_back_event_handler, LV_EVENT_CLICKED, ui);
     lv_obj_add_style(btn_back, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
 
@@ -1785,8 +1787,8 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
 
     // Write codes btn_choose_s
     btn_choose_s = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_choose_s, 526, 2);
-    lv_obj_set_size(btn_choose_s, 100, 48);
+    lv_obj_set_pos(btn_choose_s, UI_X(526), 2);
+    lv_obj_set_size(btn_choose_s, UI_X(100), UI_Y(48));
     lv_obj_t* label_choose = lv_label_create(btn_choose_s);
     lv_label_set_text(label_choose, str_language_delete[get_curr_language()]);
     lv_obj_set_style_text_font(label_choose, get_usr_fonts(ALI_PUHUITI_FONTPATH, 22), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1808,8 +1810,8 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
 
     // Write codes btn_cancel_s
     btn_cancel_s = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_cancel_s, 526, 2);
-    lv_obj_set_size(btn_cancel_s, 100, 48);
+    lv_obj_set_pos(btn_cancel_s, UI_X(526), 2);
+    lv_obj_set_size(btn_cancel_s, UI_X(100), UI_Y(48));
     lv_obj_add_flag(btn_cancel_s, LV_OBJ_FLAG_HIDDEN);
     lv_obj_t* label_cancel = lv_label_create(btn_cancel_s);
     lv_label_set_text(label_cancel, str_language_cancel[get_curr_language()]);
@@ -1833,8 +1835,8 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
     // 照片
     // 照片按钮
     btn_phalbum_s = lv_imagebutton_create(cont_top);
-    lv_obj_align(btn_phalbum_s, LV_ALIGN_CENTER, -48, 0);
-    lv_obj_set_size(btn_phalbum_s, 48, 48);
+    lv_obj_align(btn_phalbum_s, LV_ALIGN_CENTER, UI_X(-48), 0);
+    lv_obj_set_size(btn_phalbum_s, UI_X(48), UI_X(48));
     show_image(btn_phalbum_s, "相册_1.png");
     // 设置默认状态下的边框样式
     lv_obj_set_style_border_color(btn_phalbum_s, lv_color_hex(0x1296db), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1843,8 +1845,8 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
 
     // 视频按钮
     btn_vialbum_s = lv_imagebutton_create(cont_top);
-    lv_obj_align(btn_vialbum_s, LV_ALIGN_CENTER, 48, 0);
-    lv_obj_set_size(btn_vialbum_s, 48, 48);
+    lv_obj_align(btn_vialbum_s, LV_ALIGN_CENTER, UI_X(48), 0);
+    lv_obj_set_size(btn_vialbum_s, UI_X(48), UI_X(48));
     show_image(btn_vialbum_s, "视频_2.png");
 
     // 设置默认状态下的边框样式（无边框）
@@ -1860,7 +1862,7 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
 
     // 在上方添加一条分割线
     lv_obj_t *up_line                       = lv_line_create(obj_Aibum_s);
-    static lv_point_precise_t points_line[] = {{10, 52}, {640, 52}};
+    static lv_point_precise_t points_line[] = {{UI_X(10), UI_Y(52)}, {UI_X(640), UI_Y(52)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);
@@ -1868,8 +1870,8 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
 
     // Write codes cont_album_grid_s
     cont_album_grid_s = lv_obj_create(obj_Aibum_s);
-    lv_obj_set_pos(cont_album_grid_s, 0, 56);
-    lv_obj_set_size(cont_album_grid_s, 640, 424);
+    lv_obj_set_pos(cont_album_grid_s, 0, UI_Y(56));
+    lv_obj_set_size(cont_album_grid_s, UI_X(640), UI_Y(424));
     lv_obj_set_scrollbar_mode(cont_album_grid_s, LV_SCROLLBAR_MODE_ON);
 
     // Write style for cont_album_grid_s, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
@@ -1883,14 +1885,14 @@ static void Home_Album_obj_Create(lv_ui_t *ui)
     lv_obj_set_style_bg_grad_dir(cont_album_grid_s, LV_GRAD_DIR_NONE, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_top(cont_album_grid_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_bottom(cont_album_grid_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_left(cont_album_grid_s, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_left(cont_album_grid_s, UI_X(10), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_right(cont_album_grid_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_width(cont_album_grid_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 创建滚动条滑块
     scrollbar_slider_s = lv_obj_create(obj_Aibum_s);
-    lv_obj_set_size(scrollbar_slider_s, 12, 60);
-    lv_obj_set_pos(scrollbar_slider_s, 625, 60);
+    lv_obj_set_size(scrollbar_slider_s, UI_X(12), UI_Y(60));
+    lv_obj_set_pos(scrollbar_slider_s, UI_X(625), UI_Y(60));
     lv_obj_set_scrollbar_mode(scrollbar_slider_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_opa(scrollbar_slider_s, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(scrollbar_slider_s, 1, LV_PART_MAIN | LV_STATE_DEFAULT);  // 添加边框
@@ -2160,8 +2162,8 @@ static void update_ui_after_delete_all(void)
 
     // 更新滑动条
     if(scrollbar_slider_s && lv_obj_is_valid(scrollbar_slider_s)) {
-        lv_obj_set_size(scrollbar_slider_s, 12, 0);
-        lv_obj_set_pos(scrollbar_slider_s, 625, 60);
+        lv_obj_set_size(scrollbar_slider_s, UI_X(12), 0);
+        lv_obj_set_pos(scrollbar_slider_s, UI_X(625), UI_Y(60));
     }
 
     MLOG_DBG("UI更新完成，所有文件已删除\n");
@@ -2180,7 +2182,7 @@ static lv_obj_t *create_delete_progress_dialog(void)
 
     // 创建对话框
     lv_obj_t *dialog = lv_obj_create(modal_bg);
-    lv_obj_set_size(dialog, 300, 150);
+    lv_obj_set_size(dialog, UI_X(300), UI_Y(150));
     lv_obj_center(dialog);
     lv_obj_set_style_bg_color(dialog, lv_color_hex(0x2D2D2D), 0);
     lv_obj_set_style_radius(dialog, 10, 0);
@@ -2259,7 +2261,7 @@ static void create_delete_confirmation_dialog(int total_files)
 
     // 创建对话框容器
     lv_obj_t *dialog = lv_obj_create(modal_bg);
-    lv_obj_set_size(dialog, 400, 200);
+    lv_obj_set_size(dialog, UI_X(400), UI_Y(200));
     lv_obj_center(dialog);
     lv_obj_set_style_bg_color(dialog, lv_color_hex(0x2D2D2D), 0);
     lv_obj_set_style_radius(dialog, 10, 0);
@@ -2273,13 +2275,13 @@ static void create_delete_confirmation_dialog(int total_files)
         g_is_photo_mode ? str_language_photo[get_curr_language()] : str_language_video[get_curr_language()]);
     lv_obj_set_style_text_color(label, lv_color_white(), 0);
     lv_obj_set_style_text_font(label, get_usr_fonts(ALI_PUHUITI_FONTPATH, 20), 0);
-    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 30);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, UI_Y(30));
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
 
     // 创建确认按钮
     lv_obj_t *confirm_btn = lv_btn_create(dialog);
-    lv_obj_set_size(confirm_btn, 120, 40);
-    lv_obj_align(confirm_btn, LV_ALIGN_BOTTOM_LEFT, 40, -30);
+    lv_obj_set_size(confirm_btn, UI_X(120), UI_Y(40));
+    lv_obj_align(confirm_btn, LV_ALIGN_BOTTOM_LEFT, UI_X(40), UI_Y(-30));
     lv_obj_t* confirm_label = lv_label_create(confirm_btn);
     lv_label_set_text(confirm_label, str_language_confirm[get_curr_language()]);
     lv_obj_center(confirm_label);
@@ -2288,8 +2290,8 @@ static void create_delete_confirmation_dialog(int total_files)
 
     // 创建取消按钮
     lv_obj_t *cancel_btn = lv_btn_create(dialog);
-    lv_obj_set_size(cancel_btn, 120, 40);
-    lv_obj_align(cancel_btn, LV_ALIGN_BOTTOM_RIGHT, -40, -30);
+    lv_obj_set_size(cancel_btn, UI_X(120), UI_Y(40));
+    lv_obj_align(cancel_btn, LV_ALIGN_BOTTOM_RIGHT, UI_X(-40), UI_Y(-30));
     lv_obj_t* cancel_label = lv_label_create(cancel_btn);
     lv_label_set_text(cancel_label, str_language_cancel[get_curr_language()]);
     lv_obj_center(cancel_label);

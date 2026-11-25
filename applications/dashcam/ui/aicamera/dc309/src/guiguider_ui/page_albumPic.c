@@ -7,6 +7,8 @@
  * terms, then you may not retain, install, activate or otherwise use the software.
  */
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "common/extract_thumbnail.h"
 #include "custom.h"
 #include "events_init.h"
@@ -418,7 +420,7 @@ void setup_scr_screen_PhotoAlbumPic(lv_ui_t* ui)
     aiprocess_clean_cache();
     // Write codes screen_PhotoAlbumPic
     obj_AibumPic_s = lv_obj_create(NULL);
-    lv_obj_set_size(obj_AibumPic_s, 640, 480);
+    lv_obj_set_size(obj_AibumPic_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_AibumPic_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_color(obj_AibumPic_s, lv_color_hex(0),
                               LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -426,22 +428,22 @@ void setup_scr_screen_PhotoAlbumPic(lv_ui_t* ui)
 
     // 创建图片
     MLOG_DBG("current_image_path: %s\n", current_image_path);
-    img_s = lv_img_create(obj_AibumPic_s);
+    img_s = ui_image_create(obj_AibumPic_s);
     lv_obj_set_pos(img_s, 0, 0);
-    lv_obj_set_size(img_s, 640, 480);
+    lv_obj_set_size(img_s, UI_X(640), UI_Y(480));
     lv_img_set_src(img_s, current_image_path);
 
     // Write codes screen_PhotoAlbumPic_cont_top
     cont_top_s = lv_obj_create(obj_AibumPic_s);
     lv_obj_set_pos(cont_top_s, 0, 0);
-    lv_obj_set_size(cont_top_s, 640, 60);
+    lv_obj_set_size(cont_top_s, UI_X(640), UI_Y(60));
     lv_obj_set_scrollbar_mode(cont_top_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(cont_top_s, &style_common_cont_top, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // Write codes screen_PhotoAlbumPic_btn_delete
     btn_delete_s = lv_button_create(obj_AibumPic_s);
-    lv_obj_align(btn_delete_s, LV_ALIGN_BOTTOM_RIGHT, -20, -8);
-    lv_obj_set_size(btn_delete_s, 64, 60);
+    lv_obj_align(btn_delete_s, LV_ALIGN_BOTTOM_RIGHT, UI_X(-20), UI_Y(-8));
+    lv_obj_set_size(btn_delete_s, UI_X(64), UI_Y(60));
     lv_obj_set_style_bg_opa(btn_delete_s, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     btn_delete_label_s = lv_label_create(btn_delete_s);
@@ -468,8 +470,8 @@ void setup_scr_screen_PhotoAlbumPic(lv_ui_t* ui)
 
     // Write codes screen_PhotoAlbumPic_btn_back
     btn_back_s = lv_button_create(cont_top_s);
-    lv_obj_set_pos(btn_back_s, 4, 2);
-    lv_obj_set_size(btn_back_s, 100, 50);
+    lv_obj_set_pos(btn_back_s, UI_X(4), 2);
+    lv_obj_set_size(btn_back_s, UI_X(100), UI_Y(50));
     lv_obj_add_style(btn_back_s, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     btn_back_label_s = lv_label_create(btn_back_s);
@@ -481,15 +483,15 @@ void setup_scr_screen_PhotoAlbumPic(lv_ui_t* ui)
 
     // AI按钮
     lv_obj_t* ai_btn = lv_imagebutton_create(cont_top_s);
-    lv_obj_align(ai_btn, LV_ALIGN_TOP_LEFT, 110, 0);
-    lv_obj_set_size(ai_btn, 58, 58);
+    lv_obj_align(ai_btn, LV_ALIGN_TOP_LEFT, UI_X(110), 0);
+    lv_obj_set_size(ai_btn, UI_X(58), UI_X(58));
     lv_obj_add_event_cb(ai_btn, ai_process_select_event_handler, LV_EVENT_CLICKED, NULL);
     const char* mode_icon[] = { "aimoshi.png", "风格_1.png", "AI背景替换_1.png", "美颜_1.png", "语音_自定义_1.png" };
     show_image(ai_btn, mode_icon[AIModeSelect_GetMode()]);
 
     lv_obj_t* text_mode_btn = lv_btn_create(cont_top_s);
-    lv_obj_set_size(text_mode_btn, 58, 58); // 与AI按钮相同大小
-    lv_obj_align(text_mode_btn, LV_ALIGN_TOP_RIGHT, -20, 0);
+    lv_obj_set_size(text_mode_btn, UI_X(58), UI_X(58)); // 与AI按钮相同大小
+    lv_obj_align(text_mode_btn, LV_ALIGN_TOP_RIGHT, UI_X(-20), 0);
     // 设置与AI按钮相同的样式
     lv_obj_set_style_radius(text_mode_btn, lv_obj_get_style_radius(ai_btn, 0), 0);
     lv_obj_set_style_bg_color(text_mode_btn, lv_obj_get_style_bg_color(ai_btn, 0), 0);
@@ -517,8 +519,8 @@ void setup_scr_screen_PhotoAlbumPic(lv_ui_t* ui)
         filename = current_image_path; // 如果没有找到'/'，则使用原字符串
     }
     label_name_s = lv_label_create(obj_AibumPic_s);
-    lv_obj_set_pos(label_name_s, 189, 20);
-    lv_obj_set_size(label_name_s, 300, 40);
+    lv_obj_set_pos(label_name_s, UI_X(189), UI_Y(20));
+    lv_obj_set_size(label_name_s, UI_X(300), UI_Y(40));
     lv_label_set_text(label_name_s, filename);
     lv_label_set_long_mode(label_name_s, LV_LABEL_LONG_SCROLL);
     // Write style for screen_PhotoAlbumPic_label_name, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
@@ -558,10 +560,10 @@ void setup_scr_screen_PhotoAlbumPic(lv_ui_t* ui)
     // 创建进度指示器 - 兼容LVGL 9.3
     spinner = lv_spinner_create(obj_AibumPic_s); // 只有一个参数
     if(spinner) {
-        lv_obj_set_size(spinner, 60, 60);
+        lv_obj_set_size(spinner, UI_X(60), UI_X(60));
         lv_obj_set_style_arc_width(spinner, 6, 0); // 设置弧线宽度
         lv_obj_set_style_arc_color(spinner, lv_color_hex(0x0080FF), 0);
-        lv_obj_align(spinner, LV_ALIGN_CENTER, 0, 60);
+        lv_obj_align(spinner, LV_ALIGN_CENTER, 0, UI_Y(60));
         lv_obj_add_flag(spinner, LV_OBJ_FLAG_HIDDEN);
     }
     pthread_create(&aiprocess_thread, NULL, thread_ai_process_main, NULL);

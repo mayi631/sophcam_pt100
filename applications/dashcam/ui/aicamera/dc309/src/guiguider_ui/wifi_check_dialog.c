@@ -1,4 +1,5 @@
 #define DEBUG
+#include "ui_layout.h"
 #include "lvgl.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -177,32 +178,32 @@ static void show_wifi_warning_dialog_internal(lv_obj_t* parent, wifi_release_cb_
 
     // 创建对话框容器
     lv_obj_t *dialog_cont = lv_obj_create(wifi_warning_dialog);
-    lv_obj_set_size(dialog_cont, 500, 300);
+    lv_obj_set_size(dialog_cont, UI_X(500), UI_Y(300));
     lv_obj_align(dialog_cont, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_bg_color(dialog_cont, lv_color_hex(0x1A1A1A), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(dialog_cont, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(dialog_cont, 2, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(dialog_cont, lv_color_hex(0x333333), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(dialog_cont, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_all(dialog_cont, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(dialog_cont, UI_X(20), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 创建提示文本
     lv_obj_t *label_title = lv_label_create(dialog_cont);
     lv_label_set_text(label_title, str_language_network_not_connected[get_curr_language()]);
     lv_obj_set_style_text_color(label_title, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(label_title, get_usr_fonts(ALI_PUHUITI_FONTPATH, MENU_FONT_SIZE), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, 20);
+    lv_obj_align(label_title, LV_ALIGN_TOP_MID, 0, UI_Y(20));
 
     lv_obj_t *label_hint = lv_label_create(dialog_cont);
     lv_label_set_text(label_hint, str_language_connect_to_wifi[get_curr_language()]);
     lv_obj_set_style_text_color(label_hint, lv_color_hex(0xCCCCCC), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(label_hint, get_usr_fonts(ALI_PUHUITI_FONTPATH, 28), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(label_hint, LV_ALIGN_TOP_MID, 0, 70);
+    lv_obj_align(label_hint, LV_ALIGN_TOP_MID, 0, UI_Y(70));
 
     // 创建返回按钮
     lv_obj_t *btn_back = lv_btn_create(dialog_cont);
-    lv_obj_set_size(btn_back, 120, 50);
-    lv_obj_align(btn_back, LV_ALIGN_BOTTOM_LEFT, 30, -30);
+    lv_obj_set_size(btn_back, UI_X(120), UI_Y(50));
+    lv_obj_align(btn_back, LV_ALIGN_BOTTOM_LEFT, UI_X(30), UI_Y(-30));
     lv_obj_set_style_bg_color(btn_back, lv_color_hex(0x333333), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(btn_back, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_event_cb(btn_back, wifi_warning_back_cb, LV_EVENT_CLICKED, NULL);
@@ -215,8 +216,8 @@ static void show_wifi_warning_dialog_internal(lv_obj_t* parent, wifi_release_cb_
 
     // 创建WiFi开关
     lv_obj_t *cont_switch = lv_obj_create(dialog_cont);
-    lv_obj_set_size(cont_switch, 120, 50);
-    lv_obj_align(cont_switch, LV_ALIGN_BOTTOM_MID, 0, -30);
+    lv_obj_set_size(cont_switch, UI_X(120), UI_Y(50));
+    lv_obj_align(cont_switch, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-30));
     lv_obj_set_style_bg_opa(cont_switch, LV_OPA_TRANSP, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(cont_switch, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_all(cont_switch, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -239,8 +240,8 @@ static void show_wifi_warning_dialog_internal(lv_obj_t* parent, wifi_release_cb_
 
     // 创建进入WiFi界面按钮
     lv_obj_t *btn_wifi = lv_btn_create(dialog_cont);
-    lv_obj_set_size(btn_wifi, 120, 50);
-    lv_obj_align(btn_wifi, LV_ALIGN_BOTTOM_RIGHT, -30, -30);
+    lv_obj_set_size(btn_wifi, UI_X(120), UI_Y(50));
+    lv_obj_align(btn_wifi, LV_ALIGN_BOTTOM_RIGHT, UI_X(-30), UI_Y(-30));
     lv_obj_set_style_bg_color(btn_wifi, lv_color_hex(0x007AFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(btn_wifi, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_event_cb(btn_wifi, wifi_warning_enter_wifi_cb, LV_EVENT_CLICKED, NULL);

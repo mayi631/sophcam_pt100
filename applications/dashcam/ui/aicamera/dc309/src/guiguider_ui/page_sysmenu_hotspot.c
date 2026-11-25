@@ -12,6 +12,8 @@
  * （顶部标题 34 / 热点信息 24）各一次，之后复用同一指针，避免重复创建。
  */
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "config.h"
 #include "custom.h"
 #include "gui_guider.h"
@@ -269,7 +271,7 @@ static void hotspot_refresh_config(void)
     if (hs_status_text != NULL) {
         lv_label_set_text(hs_status_text, status);
         if (hs_status_icon != NULL) {
-            lv_obj_align_to(hs_status_icon, hs_status_text, LV_ALIGN_OUT_LEFT_MID, -8, 0);
+            lv_obj_align_to(hs_status_icon, hs_status_text, LV_ALIGN_OUT_LEFT_MID, UI_X(-8), 0);
         }
     }
 }
@@ -437,7 +439,7 @@ static lv_obj_t* create_info_row(lv_obj_t* parent, const char* icon,
     lv_obj_t** value_out)
 {
     lv_obj_t* row = lv_obj_create(parent);
-    lv_obj_set_size(row, width, 56);
+    lv_obj_set_size(row, width, UI_Y(56));
     lv_obj_set_style_bg_opa(row, LV_OPA_TRANSP, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(row, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_all(row, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -449,17 +451,17 @@ static lv_obj_t* create_info_row(lv_obj_t* parent, const char* icon,
         lv_label_set_text(ic, icon);
         lv_obj_set_style_text_color(ic, lv_color_hex(0xF09F20), LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_text_font(ic, &lv_font_montserratMedium_16, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_align(ic, LV_ALIGN_LEFT_MID, 14, 0);
+        lv_obj_align(ic, LV_ALIGN_LEFT_MID, UI_X(14), 0);
     }
 
     /* 标题 */
     lv_obj_t* name_label = lv_label_create(row);
     lv_label_set_text(name_label, name);
     lv_label_set_long_mode(name_label, LV_LABEL_LONG_SCROLL); /* 过长滚动 */
-    lv_obj_set_width(name_label, 140);
+    lv_obj_set_width(name_label, UI_X(140));
     lv_obj_set_style_text_color(name_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(name_label, font, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(name_label, LV_ALIGN_LEFT_MID, 52, 0);
+    lv_obj_align(name_label, LV_ALIGN_LEFT_MID, UI_X(52), 0);
 
     /* 右侧值 */
     lv_obj_t* value_label = lv_label_create(row);
@@ -467,8 +469,8 @@ static lv_obj_t* create_info_row(lv_obj_t* parent, const char* icon,
     lv_obj_set_style_text_color(value_label, lv_color_hex(0xCCCCCC), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(value_label, font, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_label_set_long_mode(value_label, LV_LABEL_LONG_SCROLL);
-    lv_obj_set_size(value_label, width - 208, 40);
-    lv_obj_align(value_label, LV_ALIGN_RIGHT_MID, -12, 8);
+    lv_obj_set_size(value_label, width - UI_X(208), UI_Y(40));
+    lv_obj_align(value_label, LV_ALIGN_RIGHT_MID, UI_X(-12), UI_Y(8));
     lv_obj_set_style_text_align(value_label, LV_TEXT_ALIGN_RIGHT, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     if (value_out != NULL) {
@@ -499,25 +501,28 @@ void sysMenu_Hotspot(lv_ui_t* ui)
 
     /* 底层窗口 */
     obj_sysMenu_Hotspot_s = lv_obj_create(NULL);
-    lv_obj_set_size(obj_sysMenu_Hotspot_s, 640, 480);
+    lv_obj_set_size(obj_sysMenu_Hotspot_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_sysMenu_Hotspot_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_opa(obj_sysMenu_Hotspot_s, LV_OPA_100, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(obj_sysMenu_Hotspot_s, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_pad_all(obj_sysMenu_Hotspot_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    show_image(obj_sysMenu_Hotspot_s, "二维码.jpg");
+    lv_obj_t* background = ui_image_create(obj_sysMenu_Hotspot_s);
+    lv_obj_set_size(background, UI_WIDTH, UI_HEIGHT);
+    show_image(background, "二维码.jpg");
+    lv_obj_clear_flag(background, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(obj_sysMenu_Hotspot_s, hotspot_gesture_event_handler, LV_EVENT_GESTURE, ui);
 
     /* ========== 顶部栏 ========== */
     hs_cont_top = lv_obj_create(obj_sysMenu_Hotspot_s);
     lv_obj_set_pos(hs_cont_top, 0, 0);
-    lv_obj_set_size(hs_cont_top, 640, 60);
+    lv_obj_set_size(hs_cont_top, UI_X(640), UI_Y(60));
     lv_obj_set_scrollbar_mode(hs_cont_top, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(hs_cont_top, &style_common_cont_top, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     /* 返回按钮 */
     hs_btn_back = lv_button_create(hs_cont_top);
-    lv_obj_set_pos(hs_btn_back, 4, 4);
-    lv_obj_set_size(hs_btn_back, 100, 52);
+    lv_obj_set_pos(hs_btn_back, UI_X(4), UI_Y(4));
+    lv_obj_set_size(hs_btn_back, UI_X(100), UI_Y(52));
     lv_obj_add_style(hs_btn_back, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_event_cb(hs_btn_back, hotspot_back_event_handler, LV_EVENT_CLICKED, NULL);
 
@@ -533,19 +538,19 @@ void sysMenu_Hotspot(lv_ui_t* ui)
     lv_label_set_text(hs_title, str_language_phone_app_connection[get_curr_language()]);
     lv_obj_set_style_text_color(hs_title, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(hs_title, hs_font, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(hs_title, LV_ALIGN_CENTER, -10, 0);
+    lv_obj_align(hs_title, LV_ALIGN_CENTER, UI_X(-10), 0);
 
     /* 顶部分割线 */
     lv_obj_t* up_line = lv_line_create(obj_sysMenu_Hotspot_s);
-    static lv_point_precise_t points_line[] = { { 10, 60 }, { 640, 60 } };
+    static lv_point_precise_t points_line[] = { {UI_X(10), UI_Y(60)}, {UI_X(640), UI_Y(60)} };
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);
 
     /* ========== 热点信息卡片（左侧栏，右侧留给二维码） ========== */
     lv_obj_t* card_info = lv_obj_create(obj_sysMenu_Hotspot_s);
-    lv_obj_set_pos(card_info, 20, 185); /* 二维码纵向中心约 y=270，卡片高 170，185+85=270 居中 */
-    lv_obj_set_size(card_info, 370, 170);
+    lv_obj_set_pos(card_info, UI_X(20), UI_Y(185)); /* 二维码纵向中心约 y=270，卡片高 170，185+85=270 居中 */
+    lv_obj_set_size(card_info, UI_X(370), UI_Y(170));
     lv_obj_set_style_bg_opa(card_info, LV_OPA_100, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(card_info, lv_color_hex(0x1E1E1E), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(card_info, 12, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -557,38 +562,38 @@ void sysMenu_Hotspot(lv_ui_t* ui)
     lv_obj_t* card_title = lv_label_create(card_info);
     lv_label_set_text(card_title, str_language_camera_hotspot[get_curr_language()]);
     lv_label_set_long_mode(card_title, LV_LABEL_LONG_SCROLL); /* 过长滚动 */
-    lv_obj_set_width(card_title, 190);
+    lv_obj_set_width(card_title, UI_X(190));
     lv_obj_set_style_text_color(card_title, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(card_title, hs_font_small, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(card_title, LV_ALIGN_TOP_LEFT, 16, 10);
+    lv_obj_align(card_title, LV_ALIGN_TOP_LEFT, UI_X(16), UI_Y(10));
 
     /* 状态文字（跟随圆点） */
     hs_status_text = lv_label_create(card_info);
     lv_label_set_text(hs_status_text, str_language_on[get_curr_language()]);
     lv_obj_set_style_text_color(hs_status_text, lv_color_hex(0xAAAAAA), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(hs_status_text, hs_font_small, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(hs_status_text, LV_ALIGN_TOP_RIGHT, -14, 12);
+    lv_obj_align(hs_status_text, LV_ALIGN_TOP_RIGHT, UI_X(-14), UI_Y(12));
     lv_obj_update_layout(hs_status_text);
     /* 状态圆点 */
     hs_status_icon = lv_obj_create(card_info);
-    lv_obj_set_size(hs_status_icon, 14, 14);
+    lv_obj_set_size(hs_status_icon, UI_X(14), UI_X(14));
     lv_obj_set_style_radius(hs_status_icon, LV_RADIUS_CIRCLE, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(hs_status_icon, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align_to(hs_status_icon, hs_status_text, LV_ALIGN_OUT_LEFT_MID, -8, 0);
+    lv_obj_align_to(hs_status_icon, hs_status_text, LV_ALIGN_OUT_LEFT_MID, UI_X(-8), 0);
 
     /* 分隔线 */
     lv_obj_t* info_line = lv_line_create(card_info);
-    static lv_point_precise_t pts_info_line[] = { { 16, 40 }, { 354, 40 } };
+    static lv_point_precise_t pts_info_line[] = { {UI_X(16), UI_Y(40)}, {UI_X(354), UI_Y(40)} };
     lv_line_set_points(info_line, pts_info_line, 2);
     lv_obj_set_style_line_width(info_line, 1, 0);
     lv_obj_set_style_line_color(info_line, lv_color_hex(0x333333), 0);
 
     /* WiFi 名称行 */
-    lv_obj_t* row_ssid = create_info_row(card_info, LV_SYMBOL_WIFI, str_language_wifi_name[get_curr_language()], hs_ssid, hs_font_small, 370, &hs_ssid_label);
-    lv_obj_align(row_ssid, LV_ALIGN_TOP_LEFT, 0, 44);
+    lv_obj_t* row_ssid = create_info_row(card_info, LV_SYMBOL_WIFI, str_language_wifi_name[get_curr_language()], hs_ssid, hs_font_small, UI_X(370), &hs_ssid_label);
+    lv_obj_align(row_ssid, LV_ALIGN_TOP_LEFT, 0, UI_Y(44));
     /* 密码行 */
-    lv_obj_t* row_pass = create_info_row(card_info, LV_SYMBOL_KEYBOARD, str_language_password[get_curr_language()], hs_password, hs_font_small, 370, &hs_pass_label);
-    lv_obj_align(row_pass, LV_ALIGN_TOP_LEFT, 0, 100);
+    lv_obj_t* row_pass = create_info_row(card_info, LV_SYMBOL_KEYBOARD, str_language_password[get_curr_language()], hs_password, hs_font_small, UI_X(370), &hs_pass_label);
+    lv_obj_align(row_pass, LV_ALIGN_TOP_LEFT, 0, UI_Y(100));
 
     /* ========== 二维码提示（二维码区域约 (400,175)~(595,365)，上方保持空白勿覆盖） ========== */
     lv_obj_t* qr_hint = lv_label_create(obj_sysMenu_Hotspot_s);
@@ -596,8 +601,8 @@ void sysMenu_Hotspot(lv_ui_t* ui)
     lv_label_set_long_mode(qr_hint, LV_LABEL_LONG_SCROLL); /* 过长滚动 */
     lv_obj_set_style_text_color(qr_hint, lv_color_hex(0xAAAAAA), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_style(qr_hint, &ttf_font_16, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_width(qr_hint, 180);
-    lv_obj_set_pos(qr_hint, 404, 378);
+    lv_obj_set_width(qr_hint, UI_X(180));
+    lv_obj_set_pos(qr_hint, UI_X(404), UI_Y(378));
     lv_obj_set_style_text_align(qr_hint, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     /* ========== 底部引导提示 ========== */
@@ -606,16 +611,16 @@ void sysMenu_Hotspot(lv_ui_t* ui)
     lv_obj_set_style_text_color(guide_label, lv_color_hex(0xAAAAAA), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_style(guide_label, &ttf_font_16, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_label_set_long_mode(guide_label, LV_LABEL_LONG_SCROLL); /* 过长滚动 */
-    lv_obj_set_width(guide_label, 600);
-    lv_obj_align(guide_label, LV_ALIGN_BOTTOM_MID, 0, -14);
+    lv_obj_set_width(guide_label, UI_X(600));
+    lv_obj_align(guide_label, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-14));
     lv_obj_set_style_text_align(guide_label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     /* ========== 热点开关（右上角） ========== */
     hs_switch = lv_switch_create(hs_cont_top);
-    lv_obj_set_size(hs_switch, 80, 40);
+    lv_obj_set_size(hs_switch, UI_X(80), UI_Y(40));
     lv_obj_set_style_bg_color(hs_switch, lv_color_hex(0x4A4A4A), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(hs_switch, lv_color_hex(0x07C160), LV_PART_INDICATOR | LV_STATE_CHECKED);
-    lv_obj_align(hs_switch, LV_ALIGN_TOP_RIGHT, -16, 10);
+    lv_obj_align(hs_switch, LV_ALIGN_TOP_RIGHT, UI_X(-16), UI_Y(10));
     lv_obj_add_event_cb(hs_switch, hotspot_switch_event_handler, LV_EVENT_VALUE_CHANGED, NULL);
 
     /* APP 连接提示由协议线程触发，top_notice 内部会切回 LVGL 线程。 */

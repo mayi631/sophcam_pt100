@@ -1,4 +1,6 @@
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "page_album_video.h"
 #include "common/extract_thumbnail.h"
 #include "custom.h"
@@ -455,7 +457,7 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
 
     // 创建主容器
     obj_AibumVid_s = lv_obj_create(NULL);
-    lv_obj_set_size(obj_AibumVid_s, 640, 480);
+    lv_obj_set_size(obj_AibumVid_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_AibumVid_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_color(obj_AibumVid_s, lv_color_hex(0), LV_PART_MAIN | LV_STATE_DEFAULT);
 
@@ -466,14 +468,14 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
     // 顶部容器（局部变量）
     lv_obj_t *cont_top_vid = lv_obj_create(obj_AibumVid_s);
     lv_obj_set_pos(cont_top_vid, 0, 0);
-    lv_obj_set_size(cont_top_vid, 640, 60);
+    lv_obj_set_size(cont_top_vid, UI_X(640), UI_Y(60));
     lv_obj_set_scrollbar_mode(cont_top_vid, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(cont_top_vid, &style_common_cont_top, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 返回按钮（局部变量）
     lv_obj_t* btn_back_vid = lv_button_create(cont_top_vid);
-    lv_obj_set_pos(btn_back_vid, 4, 2);
-    lv_obj_set_size(btn_back_vid, 100, 48);
+    lv_obj_set_pos(btn_back_vid, UI_X(4), 2);
+    lv_obj_set_size(btn_back_vid, UI_X(100), UI_Y(48));
     lv_obj_add_style(btn_back_vid, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t* label_back = lv_label_create(btn_back_vid);
@@ -482,8 +484,8 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
     lv_obj_add_style(label_back, &style_common_label_back, LV_PART_MAIN | LV_STATE_DEFAULT);
     // 删除按钮（局部变量）
     btn_delete_vid = lv_button_create(cont_top_vid);
-    lv_obj_set_pos(btn_delete_vid, 520, 2);
-    lv_obj_set_size(btn_delete_vid, 100, 48);
+    lv_obj_set_pos(btn_delete_vid, UI_X(520), 2);
+    lv_obj_set_size(btn_delete_vid, UI_X(100), UI_Y(48));
     lv_obj_set_style_bg_color(btn_delete_vid, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_width(btn_delete_vid, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
@@ -495,7 +497,7 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
     char* filename = strrchr(current_image_path, '/');
     filename = filename ? filename + 1 : current_image_path;
     lv_obj_t *label_name_vid = lv_label_create(cont_top_vid);
-    lv_obj_set_size(label_name_vid, 200, 40);
+    lv_obj_set_size(label_name_vid, UI_X(200), UI_Y(40));
     lv_label_set_text(label_name_vid, filename);
     lv_obj_align(label_name_vid, LV_ALIGN_CENTER, 0, 0);
     lv_label_set_long_mode(label_name_vid, LV_LABEL_LONG_SCROLL);
@@ -505,8 +507,8 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
 
     // 视频播放容器（局部变量）
     lv_obj_t *video_container = lv_obj_create(obj_AibumVid_s);
-    lv_obj_set_pos(video_container, 0, 60);
-    lv_obj_set_size(video_container, 640, 320);
+    lv_obj_set_pos(video_container, 0, UI_Y(60));
+    lv_obj_set_size(video_container, UI_X(640), UI_Y(320));
     lv_obj_set_style_bg_color(video_container, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(video_container, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(video_container, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -518,13 +520,13 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
     lv_obj_set_style_bg_opa(video_container, LV_OPA_0, LV_PART_MAIN);
 
     // 添加视频播放器占位符
-    lv_obj_t *video_cover = lv_img_create(video_container);
+    lv_obj_t *video_cover = ui_image_create(video_container);
     // lv_img_set_src(video_cover, "A:VideoCover.png");
     lv_obj_align(video_cover, LV_ALIGN_CENTER, 0, 0);
 
     // 添加播放按钮（居中）
     lv_obj_t *play_btn_overlay = lv_button_create(video_container);
-    lv_obj_set_size(play_btn_overlay, 80, 80);
+    lv_obj_set_size(play_btn_overlay, UI_X(80), UI_X(80));
     lv_obj_align(play_btn_overlay, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_bg_opa(play_btn_overlay, LV_OPA_50, LV_PART_MAIN);
     lv_obj_set_style_radius(play_btn_overlay, 40, LV_PART_MAIN);
@@ -542,8 +544,8 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
 
     // 底部控制栏（局部变量）
     lv_obj_t* cont_bottom_vid = lv_obj_create(obj_AibumVid_s);
-    lv_obj_set_pos(cont_bottom_vid, 0, 370);
-    lv_obj_set_size(cont_bottom_vid, 640, 100);
+    lv_obj_set_pos(cont_bottom_vid, 0, UI_Y(370));
+    lv_obj_set_size(cont_bottom_vid, UI_X(640), UI_Y(100));
     lv_obj_set_style_bg_opa(cont_bottom_vid, 0, LV_PART_MAIN);
     lv_obj_set_style_bg_color(cont_bottom_vid, lv_color_hex(0x2A2A2A), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(cont_bottom_vid, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -558,8 +560,8 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
 
     // 进度条（全局变量）
     g_progress_bar = lv_bar_create(cont_bottom_vid);
-    lv_obj_set_size(g_progress_bar, 300, 6);
-    lv_obj_align(g_progress_bar, LV_ALIGN_BOTTOM_MID, -40, -26);
+    lv_obj_set_size(g_progress_bar, UI_X(300), UI_Y(6));
+    lv_obj_align(g_progress_bar, LV_ALIGN_BOTTOM_MID, UI_X(-40), UI_Y(-26));
     lv_bar_set_range(g_progress_bar, 0, g_video_duration);
     lv_bar_set_value(g_progress_bar, 0, LV_ANIM_OFF);
     lv_obj_set_style_bg_color(g_progress_bar, lv_color_hex(0x888888), LV_PART_MAIN);
@@ -573,17 +575,17 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
         g_video_duration / 60, g_video_duration % 60);
     g_time_label = lv_label_create(cont_bottom_vid);
     lv_label_set_text(g_time_label, time_str);
-    lv_obj_align(g_time_label, LV_ALIGN_BOTTOM_RIGHT, -110, -20);
+    lv_obj_align(g_time_label, LV_ALIGN_BOTTOM_RIGHT, UI_X(-110), UI_Y(-20));
     lv_obj_set_style_text_color(g_time_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(g_time_label, get_usr_fonts(ALI_PUHUITI_FONTPATH, 16), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 添加播放/暂停按钮（局部变量）
     lv_obj_t* play_btn = lv_btn_create(cont_bottom_vid);
-    lv_obj_set_size(play_btn, 68, 68);
+    lv_obj_set_size(play_btn, UI_X(68), UI_X(68));
     lv_obj_set_style_radius(play_btn, 20, 0);
     lv_obj_set_style_bg_color(play_btn, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_shadow_width(play_btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(play_btn, LV_ALIGN_BOTTOM_LEFT, 16, 0);
+    lv_obj_align(play_btn, LV_ALIGN_BOTTOM_LEFT, UI_X(16), 0);
 
     // 小播放按钮标签（全局变量）
     g_play_btn = lv_label_create(play_btn);
@@ -594,8 +596,8 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
 
     // 音色选择按钮（右侧）
     lv_obj_t* voice_style_btn = lv_btn_create(cont_bottom_vid);
-    lv_obj_set_size(voice_style_btn, 68, 68);
-    lv_obj_align(voice_style_btn, LV_ALIGN_BOTTOM_RIGHT, -20, 0);
+    lv_obj_set_size(voice_style_btn, UI_X(68), UI_X(68));
+    lv_obj_align(voice_style_btn, LV_ALIGN_BOTTOM_RIGHT, UI_X(-20), 0);
     lv_obj_set_style_pad_all(voice_style_btn, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(voice_style_btn, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(voice_style_btn, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -612,7 +614,7 @@ void setup_scr_screen_PhotoAlbumVid(lv_ui_t* ui)
 
     // 添加上方分割线（局部变量）
     lv_obj_t *up_line = lv_line_create(obj_AibumVid_s);
-    static lv_point_precise_t points_line[] = {{0, 60}, {640, 60}};
+    static lv_point_precise_t points_line[] = {{0, UI_Y(60)}, {UI_X(640), UI_Y(60)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);

@@ -10,6 +10,8 @@
 /*********************
  *      INCLUDES
  *********************/
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "custom.h"
 #include "common/extract_thumbnail.h"
 #include "common/takephoto.h"
@@ -120,7 +122,7 @@ static void create_usb_disk_popup(void)
 
     // 创建浮窗容器
     usb_disk_popup = lv_obj_create(mask);
-    lv_obj_set_size(usb_disk_popup, 280, 220);
+    lv_obj_set_size(usb_disk_popup, UI_X(280), UI_Y(220));
     lv_obj_center(usb_disk_popup);
     lv_obj_set_style_bg_color(usb_disk_popup, lv_color_hex(0x1E1E2E), 0);
     lv_obj_set_style_bg_opa(usb_disk_popup, LV_OPA_100, 0);
@@ -133,13 +135,13 @@ static void create_usb_disk_popup(void)
 
     // USB图标（使用LV_SYMBOL_IMAGE + "USB"文字替代）
     lv_obj_t* icon_cont = lv_obj_create(usb_disk_popup);
-    lv_obj_set_size(icon_cont, 80, 80);
+    lv_obj_set_size(icon_cont, UI_X(80), UI_X(80));
     lv_obj_set_style_bg_color(icon_cont, lv_color_hex(0x89B4FA), 0);
     lv_obj_set_style_bg_opa(icon_cont, LV_OPA_20, 0);
     lv_obj_set_style_radius(icon_cont, 40, 0);
     lv_obj_set_style_border_width(icon_cont, 0, 0);
     lv_obj_clear_flag(icon_cont, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_align(icon_cont, LV_ALIGN_TOP_MID, 0, 20);
+    lv_obj_align(icon_cont, LV_ALIGN_TOP_MID, 0, UI_Y(20));
 
     lv_obj_t* icon_text = lv_label_create(icon_cont);
     lv_label_set_text(icon_text, "USB");
@@ -152,14 +154,14 @@ static void create_usb_disk_popup(void)
     lv_label_set_text(title, str_language_usb_disk_mode[get_curr_language()]);
     lv_obj_add_style(title, &ttf_font_24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(title, lv_color_hex(0x89B4FA), 0);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 90);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, UI_Y(90));
 
     // 提示文本
     lv_obj_t* hint = lv_label_create(usb_disk_popup);
     lv_label_set_text(hint, str_language_usb_disk_connected[get_curr_language()]);
     lv_obj_add_style(hint, &ttf_font_18, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(hint, lv_color_hex(0xA6ADC8), 0);
-    lv_obj_align(hint, LV_ALIGN_TOP_MID, 0, 130);
+    lv_obj_align(hint, LV_ALIGN_TOP_MID, 0, UI_Y(130));
 }
 
 static void destroy_usb_disk_popup(void)
@@ -216,8 +218,8 @@ static void ui_dyna_getparam_update(lv_timer_t *timer)
             // 进入U盘模式
             if (!usb_udisk_entered) {
                 usb_udisk_entered = true;
-                enter_usb_udisk_mode();
-                create_usb_disk_popup();
+                // enter_usb_udisk_mode();
+                // create_usb_disk_popup();
             }
         } else {
             // 退出U盘模式
@@ -337,7 +339,7 @@ void custom_init(lv_ui_t *ui)
 
     // 创建共享的顶部状态栏对象
     ui->status_bar = lv_obj_create(lv_layer_top()); // 创建在顶层对象上
-    lv_obj_set_size(ui->status_bar, 640, 40);
+    lv_obj_set_size(ui->status_bar, UI_X(640), UI_Y(40));
     lv_obj_set_pos(ui->status_bar, 0, 0);
     // lv_obj_set_style_bg_color(ui->status_bar, lv_color_hex(0xFFD400), LV_PART_MAIN | LV_STATE_DEFAULT); // 明亮的黄色
     lv_obj_set_style_bg_opa(ui->status_bar, 0, LV_PART_MAIN | LV_STATE_DEFAULT); // 完全不透明
@@ -367,9 +369,9 @@ void custom_init(lv_ui_t *ui)
 
 
     // 创建共享的WiFi图标
-    ui->img_wifi = lv_img_create(ui->status_bar);
-    lv_obj_align(ui->img_wifi, LV_ALIGN_LEFT_MID, 538, 0);
-    lv_obj_set_size(ui->img_wifi, 24, 23);
+    ui->img_wifi = ui_image_create(ui->status_bar);
+    lv_obj_align(ui->img_wifi, LV_ALIGN_LEFT_MID, UI_X(538), 0);
+    lv_obj_set_size(ui->img_wifi, UI_X(24), UI_Y(23));
     lv_image_set_pivot(ui->img_wifi, 50, 50);
     lv_image_set_rotation(ui->img_wifi, 0);
     // lv_obj_set_style_image_recolor_opa(ui->img_wifi, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -379,9 +381,9 @@ void custom_init(lv_ui_t *ui)
     lv_obj_set_style_text_font(ui->img_wifi, &lv_font_SourceHanSerifSC_Regular_30, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 创建共享的电源图标
-    ui->img_power = lv_img_create(ui->status_bar);
-    lv_obj_align(ui->img_power, LV_ALIGN_LEFT_MID, 583, 0);
-    lv_obj_set_size(ui->img_power, 40, 40);
+    ui->img_power = ui_image_create(ui->status_bar);
+    lv_obj_align(ui->img_power, LV_ALIGN_LEFT_MID, UI_X(583), 0);
+    lv_obj_set_size(ui->img_power, UI_X(40), UI_X(40));
     lv_obj_add_flag(ui->img_power, LV_OBJ_FLAG_CLICKABLE);
     show_image(ui->img_power, batter_image_small[g_batter_image_index]);
     // lv_obj_set_style_text_color(ui->img_power, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT); // 保持黑色
@@ -922,7 +924,7 @@ void create_battery_warning_popup(void) {
 
     // 创建浮窗容器
     battery_popup = lv_obj_create(mask);
-    lv_obj_set_size(battery_popup, 280, 220);
+    lv_obj_set_size(battery_popup, UI_X(280), UI_Y(220));
     lv_obj_center(battery_popup);
     lv_obj_set_style_bg_color(battery_popup, lv_color_hex(0x1E1E2E), 0);
     lv_obj_set_style_bg_opa(battery_popup, LV_OPA_100, 0);
@@ -938,26 +940,26 @@ void create_battery_warning_popup(void) {
     lv_label_set_text(icon, LV_SYMBOL_BATTERY_EMPTY);
     lv_obj_set_style_text_color(icon, lv_color_hex(0xFF0000), 0);
     lv_obj_set_style_text_font(icon, &lv_font_montserrat_48, 0);
-    lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, 30);
+    lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, UI_Y(30));
 
     // 创建标题
     lv_obj_t* title = lv_label_create(battery_popup);
     lv_label_set_text(title, str_language_low_battery_warning[get_curr_language()]);
     lv_obj_add_style(title, &ttf_font_24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(title, lv_color_hex(0xFF0000), 0);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 80);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, UI_Y(80));
 
     // 创建提示文本
     lv_obj_t* hint = lv_label_create(battery_popup);
     lv_label_set_text(hint, str_language_please_connect_power[get_curr_language()]);
     lv_obj_add_style(hint, &ttf_font_18, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(hint, lv_color_hex(0xA6ADC8), 0);
-    lv_obj_align(hint, LV_ALIGN_TOP_MID, 0, 120);
+    lv_obj_align(hint, LV_ALIGN_TOP_MID, 0, UI_Y(120));
 
     // 创建确认按钮
     lv_obj_t *btn = lv_btn_create(battery_popup);
-    lv_obj_set_size(btn, 120, 40);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -20);
+    lv_obj_set_size(btn, UI_X(120), UI_Y(40));
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-20));
     lv_obj_set_style_bg_color(btn, lv_color_hex(0x89B4FA), 0);
     lv_obj_set_style_radius(btn, 20, 0);
 

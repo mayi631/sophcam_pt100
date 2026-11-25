@@ -1,4 +1,5 @@
 #define DEBUG
+#include "ui_layout.h"
 #include "gui_guider.h"
 #include "lvgl.h"
 #include "style_common.h"
@@ -243,7 +244,7 @@ void vedioMenu_Graphy(lv_ui_t *ui)
 
     // 创建底层控件
     obj_Vedio_Graphy_s = lv_obj_create(NULL);
-    lv_obj_set_size(obj_Vedio_Graphy_s, 640, 480);
+    lv_obj_set_size(obj_Vedio_Graphy_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_Vedio_Graphy_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_pad_all(obj_Vedio_Graphy_s, 0, 0);
     lv_obj_set_style_bg_opa(obj_Vedio_Graphy_s, LV_OPA_TRANSP, LV_PART_MAIN);
@@ -255,14 +256,14 @@ void vedioMenu_Graphy(lv_ui_t *ui)
     // Write codes cont_top (顶部栏)
     lv_obj_t *cont_top = lv_obj_create(obj_Vedio_Graphy_s);
     lv_obj_set_pos(cont_top, 0, 0);
-    lv_obj_set_size(cont_top, 640, 60);
+    lv_obj_set_size(cont_top, UI_X(640), UI_Y(60));
     lv_obj_set_scrollbar_mode(cont_top, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(cont_top, &style_common_cont_top, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // Write codes btn_back (返回按钮)
     lv_obj_t* btn_back = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_back, 4, 4);
-    lv_obj_set_size(btn_back, 100, 52);
+    lv_obj_set_pos(btn_back, UI_X(4), UI_Y(4));
+    lv_obj_set_size(btn_back, UI_X(100), UI_Y(52));
     lv_obj_add_style(btn_back, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
     // 为返回按钮添加事件处理
     lv_obj_add_event_cb(btn_back, vedioGraphy_btn_back_event_handler, LV_EVENT_CLICKED, ui);
@@ -276,7 +277,7 @@ void vedioMenu_Graphy(lv_ui_t *ui)
     lv_obj_t* title = lv_label_create(cont_top);
     lv_label_set_text(title, str_language_photography[get_curr_language()]);
     lv_label_set_long_mode(title, LV_LABEL_LONG_WRAP);
-    lv_obj_align(title, LV_ALIGN_TOP_LEFT, 70, 50);
+    lv_obj_align(title, LV_ALIGN_TOP_LEFT, UI_X(70), UI_Y(50));
     lv_obj_set_style_pad_all(cont_top, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_text_font(title, get_usr_fonts(ALI_PUHUITI_FONTPATH, MENU_FONT_SIZE), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -284,14 +285,14 @@ void vedioMenu_Graphy(lv_ui_t *ui)
 
     // Write codes cont_settings (设置选项容器)
     lv_obj_t *cont_settings = lv_obj_create(obj_Vedio_Graphy_s);
-    lv_obj_set_size(cont_settings, 600, MENU_CONT_SIZE);
-    lv_obj_align(cont_settings, LV_ALIGN_TOP_MID, 0, 64);
+    lv_obj_set_size(cont_settings, UI_X(600), UI_Y(MENU_CONT_SIZE));
+    lv_obj_align(cont_settings, LV_ALIGN_TOP_MID, 0, UI_Y(64));
     lv_obj_set_style_bg_opa(cont_settings, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(cont_settings, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     // lv_obj_set_flex_flow(cont_settings, LV_FLEX_FLOW_COLUMN);
     // lv_obj_set_flex_align(cont_settings, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER,
     //                       LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_all(cont_settings, 10, 0);
+    lv_obj_set_style_pad_all(cont_settings, UI_X(10), 0);
 
     // 创建设置按钮
     const char *btn_labels[] = {str_language_normal[get_curr_language()], str_language_timelapse_photography[get_curr_language()], str_language_timed_photo[get_curr_language()]};
@@ -301,8 +302,8 @@ void vedioMenu_Graphy(lv_ui_t *ui)
         lv_obj_t *btn = lv_button_create(cont_settings);
         if(!btn) continue; // 如果按钮创建失败则跳过
 
-        lv_obj_set_size(btn, 560, MENU_BTN_SIZE);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, (MENU_BTN_SIZE + 10) * i);
+        lv_obj_set_size(btn, UI_X(560), UI_Y(MENU_BTN_SIZE));
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, UI_Y((MENU_BTN_SIZE + 10) * i));
         lv_obj_set_style_bg_opa(btn, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -337,10 +338,10 @@ void vedioMenu_Graphy(lv_ui_t *ui)
         lv_obj_t *line = lv_line_create(cont_settings);
         int y_position = (MENU_BTN_SIZE + 10) * (i + 1) - 4; // 计算y坐标  //横线在下方,且第一个btn不用画线
         // 使用点数组池中的第i组
-        line_points_pool[i][0].x = 10;
-        line_points_pool[i][0].y = y_position;
-        line_points_pool[i][1].x = 570;
-        line_points_pool[i][1].y = y_position;
+        line_points_pool[i][0].x = UI_X(10);
+        line_points_pool[i][0].y = UI_Y(y_position);
+        line_points_pool[i][1].x = UI_X(570);
+        line_points_pool[i][1].y = UI_Y(y_position);
         lv_line_set_points(line, line_points_pool[i], 2);
         lv_obj_set_style_line_width(line, 2, 0);
         lv_obj_set_style_line_color(line, lv_color_hex(0x5F5F5F), 0);
@@ -351,7 +352,7 @@ void vedioMenu_Graphy(lv_ui_t *ui)
     lv_obj_t *chlid = lv_obj_get_child(cont_settings, graphy_Current_Index_s);
     lv_group_focus_obj(chlid);
     lv_obj_add_state(chlid, LV_STATE_FOCUS_KEY);
-    lv_obj_scroll_to_y(cont_settings, ((graphy_Current_Index_s / 2) * MENU_BTN_SIZE), LV_ANIM_OFF);
+    lv_obj_scroll_to_y(cont_settings, UI_Y(((graphy_Current_Index_s / 2) * MENU_BTN_SIZE)), LV_ANIM_OFF);
     //设置焦点渐变
     // lv_set_obj_grad_style(chlid, LV_GRAD_DIR_VER, lv_color_hex(0xFBDEBD), lv_color_hex(0xF09F20));
     // //设置焦点BG
@@ -362,7 +363,7 @@ void vedioMenu_Graphy(lv_ui_t *ui)
 
     // 在上方添加一条分割线
     lv_obj_t *up_line                       = lv_line_create(obj_Vedio_Graphy_s);
-    static lv_point_precise_t points_line[] = {{10, 60}, {640, 60}};
+    static lv_point_precise_t points_line[] = {{UI_X(10), UI_Y(60)}, {UI_X(640), UI_Y(60)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);

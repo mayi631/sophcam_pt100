@@ -1,4 +1,5 @@
 #define DEBUG
+#include "ui_layout.h"
 #include "lvgl.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -143,7 +144,7 @@ void create_voice_style_modal(void)
     lv_obj_center(voice_style_cont);
     lv_obj_set_style_bg_color(voice_style_cont, lv_color_hex(0x1A1A1A), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(voice_style_cont, 10, 0);
-    lv_obj_set_style_pad_all(voice_style_cont, 20, 0);
+    lv_obj_set_style_pad_all(voice_style_cont, UI_X(20), 0);
     // 设置容器为可滚动
     lv_obj_set_scrollbar_mode(voice_style_cont, LV_SCROLLBAR_MODE_AUTO);
     lv_obj_set_scroll_dir(voice_style_cont, LV_DIR_VER);
@@ -153,10 +154,10 @@ void create_voice_style_modal(void)
     lv_label_set_text(title, str_language_select_voice_tone[get_curr_language()]);
     lv_obj_add_style(title, &ttf_font_24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(title, lv_color_white(), 0);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, UI_Y(10));
     if(lv_scr_act() != page_ai_talk_s) {
         play_switch = lv_switch_create(voice_style_cont);
-        lv_obj_align(play_switch, LV_ALIGN_TOP_RIGHT, 0, 4);
+        lv_obj_align(play_switch, LV_ALIGN_TOP_RIGHT, 0, UI_Y(4));
         lv_obj_add_event_cb(play_switch, play_witch_cb, LV_EVENT_VALUE_CHANGED, NULL);
         // 检查当前WiFi状态
         if(play_switch_flag == true) {
@@ -169,7 +170,7 @@ void create_voice_style_modal(void)
     // 创建复选框容器
     lv_obj_t *checkbox_cont = lv_obj_create(voice_style_cont);
     lv_obj_set_size(checkbox_cont, LV_PCT(100), LV_SIZE_CONTENT);
-    lv_obj_align(checkbox_cont, LV_ALIGN_TOP_MID, 0, 60);
+    lv_obj_align(checkbox_cont, LV_ALIGN_TOP_MID, 0, UI_Y(60));
     lv_obj_set_style_border_width(checkbox_cont, 0, 0);
     lv_obj_set_style_pad_all(checkbox_cont, 0, 0);
     lv_obj_set_style_bg_color(checkbox_cont, lv_color_hex(0x1A1A1A), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -177,8 +178,8 @@ void create_voice_style_modal(void)
     // 创建复选框选项
     for(int i = 0; i < voice_style_count; i++) {
         lv_obj_t *btn = lv_button_create(checkbox_cont);
-        lv_obj_set_size(btn, LV_PCT(100), 50);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, (50 + 10) * i);
+        lv_obj_set_size(btn, LV_PCT(100), UI_Y(50));
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, UI_Y((50 + 10) * i));
         lv_obj_set_style_bg_opa(btn, LV_OPA_100, LV_PART_MAIN | LV_STATE_DEFAULT); // 透明背景
         lv_obj_set_style_bg_color(btn, lv_color_hex(0), LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);

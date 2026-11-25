@@ -37,6 +37,20 @@ COMPONENTS_LIB_DIR := $(CURDIR)/comps_install/$(PROCESSED_CONFIG_CROSS_COMPILE)
 SUBDIRS += $(components-y)
 $(TOPTARGETS): $(SUBDIRS)
 
+ifeq ($(subst ",,$(CONFIG_CVI_BUILD_DIRNAME)),cv1842cp_pt100_spinand)
+ifeq ($(filter clean clean_all install,$(MAKECMDGOALS)),)
+mapi: pt100_mapi_prepare
+
+.PHONY: pt100_mapi_prepare
+pt100_mapi_prepare:
+	@if patch -d mapi -p1 --reverse --force --dry-run --silent < patches/mapi-480x640-display-size.patch >/dev/null 2>&1; then \
+		:; \
+	else \
+		patch -d mapi -p1 --forward --batch < patches/mapi-480x640-display-size.patch; \
+	fi
+endif
+endif
+
 $(SUBDIRS):
 	@if [ "$@" = "cvi_mpi" ]; then \
 		if [ "$(MAKECMDGOALS)" = "clean_all" ]; then \

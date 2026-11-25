@@ -15,6 +15,8 @@
 #include "lvgl.h"
 #include "page_all.h"
 #include "ui_common.h"
+#include "ui_layout.h"
+#include "ui_image.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -24,8 +26,8 @@ extern lv_style_t ttf_font_24;
 static uint8_t curr_focus_index = 0;
 
 // 2D网格导航配置
-#define GRID_COLS 3  // 每行3个按钮
-#define GRID_ROWS 2  // 共2行
+#define GRID_COLS UI_HOME_COLUMNS
+#define GRID_ROWS UI_HOME_ROWS
 #define GRID_MAX_OBJECTS GRID_COLS * GRID_ROWS  // 最大对象数量
 
 // 添加焦点组和当前焦点索引
@@ -107,16 +109,15 @@ static void home_All_btn_event_handler(lv_event_t *e)
     switch(code) {
         case LV_EVENT_CLICKED: {
             lv_obj_t *btn_clicked = lv_event_get_target(e);         //获取发生点击事件的控件
-            lv_obj_t *parent      = lv_obj_get_parent(btn_clicked); //获取发生点击事件的父控件
-            for(uint8_t i = 0; i < lv_obj_get_child_cnt(parent); i++) {
-                if(btn_clicked == lv_obj_get_child(parent, i)) {
+            for(uint8_t i = 0; i < GRID_MAX_OBJECTS; i++) {
+                if(btn_clicked == focusable_objects[i]) {
                     if (is_first_init) {
                         is_first_init = false;
                         //显示黑色背景色，盖掉开机logo。后续送流的时候，会盖掉背景色。
                         system("devmem 0x0a094094 32 0x00010028");
                     }
                     curr_focus_index = i;
-                    lv_obj_t* target_obj = lv_obj_get_child(obj_home_s, curr_focus_index);
+                    lv_obj_t* target_obj = focusable_objects[curr_focus_index];
                     lv_obj_add_state(target_obj, LV_STATE_FOCUS_KEY);
                     set_focus_index(curr_focus_index);
                     if (get_exit_completed() != true)
@@ -192,12 +193,19 @@ void setup_scr_home1(lv_ui_t* ui)
     lv_obj_set_style_bg_opa(obj_home_s, 255, LV_PART_MAIN | LV_STATE_DEFAULT); // 不透明度 0~255，255 完全不透明
     lv_obj_set_style_bg_color(obj_home_s, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT); // 背景颜色
     lv_obj_set_style_bg_grad_dir(obj_home_s, LV_GRAD_DIR_NONE, LV_PART_MAIN | LV_STATE_DEFAULT);    // 无渐变色
-    lv_obj_set_style_bg_image_src(obj_home_s,&Desktop,LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(obj_home_s, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(obj_home_s, 0, LV_PART_MAIN);
+    lv_obj_clear_flag(obj_home_s, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_t *background = ui_image_create(obj_home_s);
+    lv_image_set_src(background, &Desktop);
+    lv_obj_set_size(background, UI_WIDTH, UI_HEIGHT);
+    lv_image_set_inner_align(background, LV_IMAGE_ALIGN_COVER);
+    lv_obj_clear_flag(background, LV_OBJ_FLAG_CLICKABLE);
 
     // 1. 拍照
     lv_obj_t *btn_take_photo = lv_btn_create(obj_home_s);
-    lv_obj_set_size(btn_take_photo, 170, 200);
-    lv_obj_align(btn_take_photo, LV_ALIGN_TOP_LEFT, 50, 36);
+    lv_obj_set_size(btn_take_photo, UI_HOME_BUTTON_WIDTH, UI_HOME_BUTTON_HEIGHT);
+    lv_obj_align(btn_take_photo, LV_ALIGN_TOP_LEFT, UI_HOME_X(0), UI_HOME_Y(0));
     lv_obj_set_style_bg_opa(btn_take_photo, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(btn_take_photo, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(btn_take_photo, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -222,8 +230,8 @@ void setup_scr_home1(lv_ui_t* ui)
     // 主页面上增加按钮
     // 1. 增加AI拍万物
     lv_obj_t *btn_iden_things = lv_btn_create(obj_home_s);
-    lv_obj_set_size(btn_iden_things, 170, 200);
-    lv_obj_align(btn_iden_things, LV_ALIGN_TOP_LEFT, 240, 36);
+    lv_obj_set_size(btn_iden_things, UI_HOME_BUTTON_WIDTH, UI_HOME_BUTTON_HEIGHT);
+    lv_obj_align(btn_iden_things, LV_ALIGN_TOP_LEFT, UI_HOME_X(1), UI_HOME_Y(1));
     lv_obj_set_style_bg_opa(btn_iden_things, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(btn_iden_things, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_color(btn_iden_things, lv_color_hex(0), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -248,8 +256,8 @@ void setup_scr_home1(lv_ui_t* ui)
 
     // 1. 相册
     lv_obj_t *btn_album = lv_btn_create(obj_home_s);
-    lv_obj_set_size(btn_album, 150, 200);
-    lv_obj_align(btn_album, LV_ALIGN_TOP_LEFT, 430, 36);
+    lv_obj_set_size(btn_album, UI_HOME_BUTTON_WIDTH, UI_HOME_BUTTON_HEIGHT);
+    lv_obj_align(btn_album, LV_ALIGN_TOP_LEFT, UI_HOME_X(2), UI_HOME_Y(2));
     lv_obj_set_style_bg_opa(btn_album, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(btn_album, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(btn_album, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -273,8 +281,8 @@ void setup_scr_home1(lv_ui_t* ui)
 
     // 1. ai对话
     lv_obj_t *btn_aitalk = lv_btn_create(obj_home_s);
-    lv_obj_set_size(btn_aitalk, 170, 200);
-    lv_obj_align(btn_aitalk, LV_ALIGN_TOP_LEFT, 50, 250);
+    lv_obj_set_size(btn_aitalk, UI_HOME_BUTTON_WIDTH, UI_HOME_BUTTON_HEIGHT);
+    lv_obj_align(btn_aitalk, LV_ALIGN_TOP_LEFT, UI_HOME_X(3), UI_HOME_Y(3));
     lv_obj_set_style_bg_opa(btn_aitalk, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(btn_aitalk, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(btn_aitalk, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -297,8 +305,8 @@ void setup_scr_home1(lv_ui_t* ui)
 
     // 1. 拍照翻译
     lv_obj_t *btn_translation = lv_btn_create(obj_home_s);
-    lv_obj_set_size(btn_translation, 170, 200);
-    lv_obj_align(btn_translation, LV_ALIGN_TOP_LEFT, 240, 250);
+    lv_obj_set_size(btn_translation, UI_HOME_BUTTON_WIDTH, UI_HOME_BUTTON_HEIGHT);
+    lv_obj_align(btn_translation, LV_ALIGN_TOP_LEFT, UI_HOME_X(4), UI_HOME_Y(4));
     lv_obj_set_style_bg_opa(btn_translation, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(btn_translation, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(btn_translation, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -322,8 +330,8 @@ void setup_scr_home1(lv_ui_t* ui)
 
     // 1. 设置
     lv_obj_t *btn_setting = lv_btn_create(obj_home_s);
-    lv_obj_set_size(btn_setting, 170, 200);
-    lv_obj_align(btn_setting, LV_ALIGN_TOP_LEFT, 430, 250);
+    lv_obj_set_size(btn_setting, UI_HOME_BUTTON_WIDTH, UI_HOME_BUTTON_HEIGHT);
+    lv_obj_align(btn_setting, LV_ALIGN_TOP_LEFT, UI_HOME_X(5), UI_HOME_Y(5));
     lv_obj_set_style_bg_opa(btn_setting, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(btn_setting, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(btn_setting, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -345,7 +353,15 @@ void setup_scr_home1(lv_ui_t* ui)
     lv_obj_set_size(label_setting, LV_PCT(100), 30);
     lv_label_set_long_mode(label_setting, LV_LABEL_LONG_SCROLL);
 
-    lv_obj_t* target_obj = lv_obj_get_child(obj_home_s, curr_focus_index);
+    lv_obj_t* labels[] = {label_take_photo, label_iden_things, label_album,
+                          label_aitalk, label_translation, label_setting};
+    for (uint8_t index = 0; index < GRID_MAX_OBJECTS; index++) {
+        lv_obj_set_style_bg_color(labels[index], lv_color_white(), LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_opa(labels[index], LV_OPA_70, LV_PART_MAIN | LV_STATE_DEFAULT);
+        lv_obj_set_style_radius(labels[index], 6, LV_PART_MAIN | LV_STATE_DEFAULT);
+    }
+
+    lv_obj_t* target_obj = lv_obj_get_child(obj_home_s, curr_focus_index + 1);
     // 初始化焦点组
     init_focus_group(obj_home_s, GRID_COLS, GRID_ROWS, focusable_objects, GRID_MAX_OBJECTS, home_click_callback, target_obj);
     lv_obj_add_state(target_obj, LV_STATE_FOCUS_KEY);

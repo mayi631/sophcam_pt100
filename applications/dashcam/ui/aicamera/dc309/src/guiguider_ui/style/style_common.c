@@ -1,3 +1,4 @@
+#include "ui_layout.h"
 #include "config.h"
 #include "custom.h"
 #include "lvgl.h"
@@ -41,6 +42,21 @@ lv_style_t style_modal_panel;
 lv_style_t style_list_row_even;
 /* 通用列表奇数行样式 */
 lv_style_t style_list_row_odd;
+
+void ui_settings_title_create(lv_obj_t *parent, const char *text)
+{
+    lv_obj_t *title = lv_label_create(parent);
+    if (title == NULL) {
+        return;
+    }
+    lv_label_set_text(title, text);
+    lv_label_set_long_mode(title, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(title, UI_WIDTH - 2 * UI_X(110));
+    lv_obj_set_style_text_font(title, get_usr_fonts(ALI_PUHUITI_FONTPATH, 34), LV_PART_MAIN);
+    lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+    lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_align(title, LV_ALIGN_CENTER, 0, 0);
+}
 
 void init_common_style(void)
 {
@@ -104,20 +120,20 @@ void init_common_style(void)
     lv_style_set_bg_opa(&style_settings_item, LV_OPA_COVER);
     lv_style_set_bg_color(&style_settings_item, lv_color_hex(0x1A1A1A)); /* 深色背景 */
     lv_style_set_border_width(&style_settings_item, 0);
-    lv_style_set_pad_top(&style_settings_item, 12);
-    lv_style_set_pad_bottom(&style_settings_item, 12);
-    lv_style_set_pad_left(&style_settings_item, 15);
-    lv_style_set_pad_right(&style_settings_item, 15);
+    lv_style_set_pad_top(&style_settings_item, UI_Y(12));
+    lv_style_set_pad_bottom(&style_settings_item, UI_Y(12));
+    lv_style_set_pad_left(&style_settings_item, UI_X(15));
+    lv_style_set_pad_right(&style_settings_item, UI_X(15));
 
     /* 初始化设置项选中样式 */
     lv_style_init(&style_settings_item_selected);
     lv_style_set_bg_opa(&style_settings_item_selected, LV_OPA_COVER);
     lv_style_set_bg_color(&style_settings_item_selected, lv_color_hex(0x2A2A2A)); /* 浅色背景表示选中 */
     lv_style_set_border_width(&style_settings_item_selected, 0);
-    lv_style_set_pad_top(&style_settings_item_selected, 12);
-    lv_style_set_pad_bottom(&style_settings_item_selected, 12);
-    lv_style_set_pad_left(&style_settings_item_selected, 15);
-    lv_style_set_pad_right(&style_settings_item_selected, 15);
+    lv_style_set_pad_top(&style_settings_item_selected, UI_Y(12));
+    lv_style_set_pad_bottom(&style_settings_item_selected, UI_Y(12));
+    lv_style_set_pad_left(&style_settings_item_selected, UI_X(15));
+    lv_style_set_pad_right(&style_settings_item_selected, UI_X(15));
 
     /* 初始化页面容器样式 */
     lv_style_init(&style_page_container); /* 创建样式对象 */

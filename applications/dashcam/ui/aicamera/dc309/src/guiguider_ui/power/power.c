@@ -1,4 +1,5 @@
 // #define DEBUG
+#include "ui_layout.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include <unistd.h>
@@ -133,7 +134,7 @@ void create_power_dialog(void)
     // 创建对话框容器
     power_dialog = lv_obj_create(power_dialog_bg);
     lv_obj_remove_style_all(power_dialog);
-    lv_obj_set_size(power_dialog, 500, 300);
+    lv_obj_set_size(power_dialog, UI_X(500), UI_Y(300));
     lv_obj_align(power_dialog, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_bg_opa(power_dialog, LV_OPA_100, LV_PART_MAIN);
     lv_obj_set_style_bg_color(power_dialog, lv_color_hex(0x1A1A1A), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -150,14 +151,14 @@ void create_power_dialog(void)
     lv_label_set_text(icon, LV_SYMBOL_POWER);
     lv_obj_set_style_text_font(icon, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(icon, lv_color_hex(0xFF6B6B), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, 20);
+    lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, UI_Y(20));
 
     // 添加标题
     lv_obj_t *title = lv_label_create(power_dialog);
     lv_label_set_text(title, "电源管理");
     lv_obj_set_style_text_font(title, get_usr_fonts(ALI_PUHUITI_FONTPATH, MENU_FONT_SIZE), 0);
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 80);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, UI_Y(80));
 
     // 添加说明文本
     lv_obj_t *explain = lv_label_create(power_dialog);
@@ -165,15 +166,15 @@ void create_power_dialog(void)
     lv_obj_set_style_text_font(explain, get_usr_fonts(ALI_PUHUITI_FONTPATH, MENU_FONT_SIZE), 0);
     lv_obj_set_style_text_color(explain, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_align(explain, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_height(explain, 60);
-    lv_obj_set_width(explain, 450);
-    lv_obj_align(explain, LV_ALIGN_TOP_MID, 0, 120);
+    lv_obj_set_height(explain, UI_Y(60));
+    lv_obj_set_width(explain, UI_X(450));
+    lv_obj_align(explain, LV_ALIGN_TOP_MID, 0, UI_Y(120));
 
     // 创建按钮容器
     power_btn_cont = lv_obj_create(power_dialog);
     lv_obj_remove_style_all(power_btn_cont);
-    lv_obj_set_size(power_btn_cont, 400, 80);
-    lv_obj_align(power_btn_cont, LV_ALIGN_BOTTOM_MID, 0, -20);
+    lv_obj_set_size(power_btn_cont, UI_X(400), UI_Y(80));
+    lv_obj_align(power_btn_cont, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-20));
 
     // 创建三个按钮：关机、重启、取消
     const char* btn_texts[] = {"关机", "重启", "取消"};
@@ -185,8 +186,8 @@ void create_power_dialog(void)
 
     for(int i = 0; i < 3; i++) {
         lv_obj_t *btn = lv_btn_create(power_btn_cont);
-        lv_obj_set_size(btn, 110, 50);
-        lv_obj_align(btn, LV_ALIGN_LEFT_MID, i * 130 + 20, 0);
+        lv_obj_set_size(btn, UI_X(110), UI_Y(50));
+        lv_obj_align(btn, LV_ALIGN_LEFT_MID, UI_X(i * 130 + 20), 0);
         lv_obj_set_style_bg_color(btn, btn_colors[i], LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_radius(btn, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_border_width(btn, 2, LV_PART_MAIN | LV_STATE_DEFAULT);

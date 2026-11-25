@@ -2,6 +2,7 @@
  * 软件版本信息页面
  */
 // #define DEBUG
+#include "ui_layout.h"
 #include "config.h"
 #include "custom.h"
 #include "gui_guider.h"
@@ -122,7 +123,7 @@ void version_info_page(lv_ui_t *ui)
 
     // 创建新页面
     obj_sysMenu_version_s = lv_obj_create(NULL);
-    lv_obj_set_size(obj_sysMenu_version_s, 640, 480);
+    lv_obj_set_size(obj_sysMenu_version_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_sysMenu_version_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_opa(obj_sysMenu_version_s, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(obj_sysMenu_version_s, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -132,15 +133,15 @@ void version_info_page(lv_ui_t *ui)
 
     // 创建顶部栏
     cont_top = lv_obj_create(obj_sysMenu_version_s);
-    lv_obj_set_size(cont_top, 640, 60);
+    lv_obj_set_size(cont_top, UI_X(640), UI_Y(60));
     lv_obj_set_pos(cont_top, 0, 0);
     lv_obj_set_scrollbar_mode(cont_top, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(cont_top, &style_common_cont_top, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 返回按钮
     btn_back = lv_btn_create(cont_top);
-    lv_obj_set_size(btn_back, 100, 52);
-    lv_obj_set_pos(btn_back, 4, 4);
+    lv_obj_set_size(btn_back, UI_X(100), UI_Y(52));
+    lv_obj_set_pos(btn_back, UI_X(4), UI_Y(4));
     lv_obj_add_style(btn_back, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_event_cb(btn_back, version_info_back_event_handler, LV_EVENT_CLICKED, ui);
 
@@ -160,11 +161,11 @@ void version_info_page(lv_ui_t *ui)
 
     // 内容容器
     cont_content = lv_obj_create(obj_sysMenu_version_s);
-    lv_obj_set_size(cont_content, 600, 380);
-    lv_obj_set_pos(cont_content, 20, 80);
+    lv_obj_set_size(cont_content, UI_X(600), UI_Y(380));
+    lv_obj_set_pos(cont_content, UI_X(20), UI_Y(80));
     lv_obj_set_style_bg_opa(cont_content, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(cont_content, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_all(cont_content, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(cont_content, UI_X(20), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     update_version_info(get_curr_language());
 
@@ -179,8 +180,8 @@ void version_info_page(lv_ui_t *ui)
 
         // 创建行容器
         lv_obj_t *row = lv_obj_create(cont_content);
-        lv_obj_set_size(row, 560, 50);
-        lv_obj_set_pos(row, 0, i * 60);
+        lv_obj_set_size(row, UI_X(560), UI_Y(50));
+        lv_obj_set_pos(row, 0, UI_Y(i * 60));
         lv_obj_set_style_bg_opa(row, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_border_width(row, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_pad_all(row, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -203,11 +204,11 @@ void version_info_page(lv_ui_t *ui)
         // 添加分隔线（最后一行不加）
         if(i < sizeof(version_info) / sizeof(version_info[0]) - 1) {
             lv_obj_t *line                          = lv_line_create(cont_content);
-            static lv_point_precise_t line_points[] = {{0, 0}, {560, 0}};
+            static lv_point_precise_t line_points[] = {{0, 0}, {UI_X(560), 0}};
             lv_line_set_points(line, line_points, 2);
             lv_obj_set_style_line_width(line, 1, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_line_color(line, lv_color_hex(0x333333), LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_pos(line, 0, (i + 1) * 60 - 5);
+            lv_obj_set_pos(line, 0, UI_Y((i + 1) * 60 - 5));
         }
     }
 
@@ -216,7 +217,7 @@ void version_info_page(lv_ui_t *ui)
     lv_label_set_text(company_label, "Copyright © 2025 SOPHGO");
     lv_obj_set_style_text_color(company_label, lv_color_hex(0x888888), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_style(company_label, &ttf_font_16, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(company_label, LV_ALIGN_BOTTOM_MID, 0, -20);
+    lv_obj_align(company_label, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-20));
 
     // 更新布局
     lv_obj_update_layout(obj_sysMenu_version_s);

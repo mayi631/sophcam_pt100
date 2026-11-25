@@ -2,6 +2,8 @@
 // ! #region 1. 头文件与宏定义
 // #############################################################################
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "config.h"
 #include "custom.h"
 #include "gui_guider.h"
@@ -156,7 +158,7 @@ void factory_test_menu(lv_ui_t* ui)
     // 创建主页面容器
     obj_factory_test_s = lv_obj_create(NULL);
     lv_obj_remove_style_all(obj_factory_test_s);
-    lv_obj_set_size(obj_factory_test_s, 640, 480);
+    lv_obj_set_size(obj_factory_test_s, UI_X(640), UI_Y(480));
     lv_obj_set_style_bg_color(obj_factory_test_s, lv_color_hex(0x1A1A1A), LV_PART_MAIN);
     lv_obj_center(obj_factory_test_s);
     lv_obj_set_style_bg_opa(obj_factory_test_s, LV_OPA_100, LV_PART_MAIN);
@@ -164,15 +166,15 @@ void factory_test_menu(lv_ui_t* ui)
     // 创建顶部栏
     lv_obj_t* top_bar = lv_obj_create(obj_factory_test_s);
     lv_obj_remove_style_all(top_bar);
-    lv_obj_set_size(top_bar, 640, 60);
+    lv_obj_set_size(top_bar, UI_X(640), UI_Y(60));
     lv_obj_set_pos(top_bar, 0, 0);
     lv_obj_set_style_bg_color(top_bar, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(top_bar, LV_OPA_100, LV_PART_MAIN);
 
     // 创建返回按钮
     lv_obj_t* btn_back = lv_btn_create(top_bar);
-    lv_obj_set_size(btn_back, 80, 50);
-    lv_obj_set_pos(btn_back, 10, 5);
+    lv_obj_set_size(btn_back, UI_X(80), UI_Y(50));
+    lv_obj_set_pos(btn_back, UI_X(10), UI_Y(5));
     lv_obj_set_style_bg_color(btn_back, lv_color_hex(0x404040), LV_PART_MAIN);
     lv_obj_set_style_radius(btn_back, 10, LV_PART_MAIN);
     lv_obj_add_event_cb(btn_back, factory_test_menu_callback, LV_EVENT_CLICKED, NULL);
@@ -193,8 +195,8 @@ void factory_test_menu(lv_ui_t* ui)
     // 创建设置选项容器
     lv_obj_t* settings_cont = lv_obj_create(obj_factory_test_s);
     lv_obj_remove_style_all(settings_cont);
-    lv_obj_set_size(settings_cont, 640, 420);
-    lv_obj_set_pos(settings_cont, 0, 60);
+    lv_obj_set_size(settings_cont, UI_X(640), UI_Y(420));
+    lv_obj_set_pos(settings_cont, 0, UI_Y(60));
     lv_obj_set_style_bg_color(settings_cont, lv_color_hex(0x1A1A1A), LV_PART_MAIN);
 
     // 定义测试菜单项
@@ -206,16 +208,16 @@ void factory_test_menu(lv_ui_t* ui)
     };
 
 // 按钮样式参数
-#define BTN_WIDTH 600
-#define BTN_HEIGHT 70
-#define BTN_START_Y 20
-#define BTN_GAP 10
+#define BTN_WIDTH UI_X(600)
+#define BTN_HEIGHT UI_Y(70)
+#define BTN_START_Y UI_Y(20)
+#define BTN_GAP UI_Y(10)
 
     // 使用循环创建所有按钮
     for (int i = 0; i < FACTORY_TEST_ITEMS_COUNT; i++) {
         lv_obj_t* btn = lv_btn_create(settings_cont);
         lv_obj_set_size(btn, BTN_WIDTH, BTN_HEIGHT);
-        lv_obj_set_pos(btn, 20, BTN_START_Y + i * (BTN_HEIGHT + BTN_GAP));
+        lv_obj_set_pos(btn, UI_X(20), BTN_START_Y + i * (BTN_HEIGHT + BTN_GAP));
         lv_obj_set_style_bg_color(btn, lv_color_hex(0x404040), LV_PART_MAIN);
         lv_obj_set_style_radius(btn, 15, LV_PART_MAIN);
         lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN);
@@ -248,7 +250,7 @@ void factory_touch_test(lv_ui_t* ui)
     // 创建触摸测试窗口
     obj_touch_test_s = lv_obj_create(NULL);
     lv_obj_remove_style_all(obj_touch_test_s);
-    lv_obj_set_size(obj_touch_test_s, 640, 480);
+    lv_obj_set_size(obj_touch_test_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_touch_test_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_opa(obj_touch_test_s, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(obj_touch_test_s, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -258,19 +260,18 @@ void factory_touch_test(lv_ui_t* ui)
 
     // 创建全屏画布用于显示触摸路径
     touch_canvas = lv_canvas_create(obj_touch_test_s);
-    lv_obj_set_size(touch_canvas, 640, 480);
+    lv_obj_set_size(touch_canvas, UI_X(640), UI_Y(480));
     lv_obj_set_pos(touch_canvas, 0, 0);
 
-// 创建画布绘制缓冲区 (640 * 480 * 2 = 614400 bytes for RGB565)
-#define FULLSCREEN_CANVAS_BUF_SIZE (640 * 480 * 2)
+#define FULLSCREEN_CANVAS_BUF_SIZE (UI_WIDTH * UI_HEIGHT * 2)
     static uint8_t cbuf[FULLSCREEN_CANVAS_BUF_SIZE];
-    lv_canvas_set_buffer(touch_canvas, cbuf, 640, 480, LV_COLOR_FORMAT_RGB565);
+    lv_canvas_set_buffer(touch_canvas, cbuf, UI_WIDTH, UI_HEIGHT, LV_COLOR_FORMAT_RGB565);
     lv_canvas_fill_bg(touch_canvas, lv_color_hex(0x1A1A1A), LV_OPA_COVER);
 
     // 创建顶部栏背景（半透明）
     touch_overlay = lv_obj_create(obj_touch_test_s);
     lv_obj_remove_style_all(touch_overlay);
-    lv_obj_set_size(touch_overlay, 640, 60);
+    lv_obj_set_size(touch_overlay, UI_X(640), UI_Y(60));
     lv_obj_set_pos(touch_overlay, 0, 0);
     lv_obj_set_style_bg_color(touch_overlay, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(touch_overlay, LV_OPA_0, LV_PART_MAIN);
@@ -281,21 +282,21 @@ void factory_touch_test(lv_ui_t* ui)
     lv_label_set_text(title, "Touch Screen Test");
     lv_obj_set_style_text_font(title, &lv_font_montserrat_28, LV_PART_MAIN);
     lv_obj_set_style_text_color(title, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_align(title, LV_ALIGN_CENTER, 6, 0);
+    lv_obj_align(title, LV_ALIGN_CENTER, UI_X(6), 0);
 
     // 创建提示标签
     touch_test_label = lv_label_create(touch_overlay);
     lv_label_set_text(touch_test_label, "Click or Draw to connect all 9 points");
     lv_obj_set_style_text_font(touch_test_label, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_set_style_text_color(touch_test_label, lv_color_hex(0xFFFF00), LV_PART_MAIN);
-    lv_obj_set_pos(touch_test_label, 100, 45);
+    lv_obj_set_pos(touch_test_label, UI_X(100), UI_Y(45));
 
     // 创建进度标签
     touch_test_progress = lv_label_create(obj_touch_test_s);
     lv_label_set_text(touch_test_progress, "Progress: 0/9");
     lv_obj_add_style(touch_test_progress, &ttf_font_24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(touch_test_progress, lv_color_hex(0xFFFF00), LV_PART_MAIN);
-    lv_obj_align(touch_test_progress, LV_ALIGN_CENTER, 6, 0);
+    lv_obj_align(touch_test_progress, LV_ALIGN_CENTER, UI_X(6), 0);
 
     // 添加触摸事件到画布
     lv_obj_add_flag(touch_canvas, LV_OBJ_FLAG_CLICKABLE);
@@ -325,7 +326,7 @@ void factory_key_test(lv_ui_t* ui)
     // 创建按键测试窗口
     obj_key_test_s = lv_obj_create(NULL);
     lv_obj_remove_style_all(obj_key_test_s);
-    lv_obj_set_size(obj_key_test_s, 640, 480);
+    lv_obj_set_size(obj_key_test_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_key_test_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_opa(obj_key_test_s, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(obj_key_test_s, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -336,14 +337,14 @@ void factory_key_test(lv_ui_t* ui)
     // 创建顶部栏
     lv_obj_t* top_bar = lv_obj_create(obj_key_test_s);
     lv_obj_remove_style_all(top_bar);
-    lv_obj_set_size(top_bar, 640, 60);
+    lv_obj_set_size(top_bar, UI_X(640), UI_Y(60));
     lv_obj_set_pos(top_bar, 0, 0);
     lv_obj_set_style_bg_color(top_bar, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
 
     // 创建返回按钮
     lv_obj_t* btn_back = lv_btn_create(top_bar);
-    lv_obj_set_size(btn_back, 80, 50);
-    lv_obj_set_pos(btn_back, 10, 5);
+    lv_obj_set_size(btn_back, UI_X(80), UI_Y(50));
+    lv_obj_set_pos(btn_back, UI_X(10), UI_Y(5));
     lv_obj_set_style_bg_color(btn_back, lv_color_hex(0x404040), LV_PART_MAIN);
     lv_obj_set_style_radius(btn_back, 10, LV_PART_MAIN);
     lv_obj_add_event_cb(btn_back, key_test_exit_callback, LV_EVENT_CLICKED, NULL);
@@ -366,7 +367,7 @@ void factory_key_test(lv_ui_t* ui)
     lv_label_set_text(hint_label, "Press all keys to test");
     lv_obj_set_style_text_font(hint_label, &lv_font_montserrat_18, LV_PART_MAIN);
     lv_obj_set_style_text_color(hint_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_set_pos(hint_label, 20, 70);
+    lv_obj_set_pos(hint_label, UI_X(20), UI_Y(70));
 
     // 创建按键状态标签（显示8个按键的状态）
     const char* key_names[] = { "MENU", "OK", "UP", "DOWN", "LEFT", "RIGHT", "W", "T", "AI", "MODE", "FOCUS", "CAMERA" };
@@ -381,7 +382,7 @@ void factory_key_test(lv_ui_t* ui)
 
         int row = i / 2;
         int col = i % 2;
-        lv_obj_set_pos(key_test_labels[i], 50 + col * 300, 100 + row * 40);
+        lv_obj_set_pos(key_test_labels[i], UI_X(50 + col * 300), UI_Y(100 + row * 40));
     }
 
     // 创建测试总结标签
@@ -389,7 +390,7 @@ void factory_key_test(lv_ui_t* ui)
     lv_label_set_text(key_test_summary, "Test Progress: 0/12");
     lv_obj_set_style_text_font(key_test_summary, &lv_font_montserrat_24, LV_PART_MAIN);
     lv_obj_set_style_text_color(key_test_summary, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_set_pos(key_test_summary, 20, 400);
+    lv_obj_set_pos(key_test_summary, UI_X(20), UI_Y(400));
 
     // 重置测试状态
     for (int i = 0; i < 12; i++) {
@@ -538,7 +539,7 @@ static void draw_on_touchpad(lv_event_t* e)
     lv_indev_get_point(lv_indev_active(), &point);
 
     // 边界检查
-    if (point.x < 0 || point.x >= 640 || point.y < 0 || point.y >= 480) {
+    if (point.x < 0 || point.x >= UI_WIDTH || point.y < 0 || point.y >= UI_HEIGHT) {
         MLOG_DBG("Ignoring out-of-bound point (%d,%d)\n", point.x, point.y);
         return;
     }
@@ -1055,7 +1056,7 @@ static void draw_touch_test_points(void)
             for (int angle = 0; angle < 360; angle += 5) {
                 int px = pt.x + (int)(r * cosf(angle * 3.14159f / 180.0f));
                 int py = pt.y + (int)(r * sinf(angle * 3.14159f / 180.0f));
-                if (px >= 0 && px < 640 && py >= 0 && py < 480) {
+                if (px >= 0 && px < UI_WIDTH && py >= 0 && py < UI_HEIGHT) {
                     lv_canvas_set_px(canvas, px, py, lv_color_hex(color_hex), LV_OPA_COVER);
                 }
             }
@@ -1067,7 +1068,7 @@ static void draw_touch_test_points(void)
                 if (dx * dx + dy * dy <= 36) { // 圆形区域
                     int px = pt.x + dx;
                     int py = pt.y + dy;
-                    if (px >= 0 && px < 640 && py >= 0 && py < 480) {
+                    if (px >= 0 && px < UI_WIDTH && py >= 0 && py < UI_HEIGHT) {
                         lv_canvas_set_px(canvas, px, py, lv_color_hex(color_hex), LV_OPA_COVER);
                     }
                 }
@@ -1088,12 +1089,12 @@ static void draw_touch_test_points(void)
         lv_obj_set_style_text_color(touch_point_labels[i], lv_color_hex(color_hex), LV_PART_MAIN);
 
         // 标签位置：点在右侧，避免超出边界
-        int label_x = pt.x + 25;
-        if (label_x > 600)
-            label_x = 600; // 防止超出右边界
-        if (label_x < 10)
-            label_x = 10; // 防止超出左边界
-        lv_obj_set_pos(touch_point_labels[i], label_x, pt.y - 10);
+        int label_x = pt.x + UI_X(25);
+        if (label_x > UI_WIDTH - UI_X(40))
+            label_x = UI_WIDTH - UI_X(40); // 防止超出右边界
+        if (label_x < UI_X(10))
+            label_x = UI_X(10); // 防止超出左边界
+        lv_obj_set_pos(touch_point_labels[i], label_x, pt.y - UI_Y(10));
     }
 }
 
@@ -1121,7 +1122,7 @@ static void draw_line_to_point(lv_obj_t* canvas, lv_point_t from, lv_point_t to,
         int cx = (int)(x0 + (x1 - x0) * t + 0.5f);
         int cy = (int)(y0 + (y1 - y0) * t + 0.5f);
 
-        if (cx < 0 || cx >= 640 || cy < 0 || cy >= 480) {
+        if (cx < 0 || cx >= UI_WIDTH || cy < 0 || cy >= UI_HEIGHT) {
             continue;
         }
 
@@ -1130,7 +1131,7 @@ static void draw_line_to_point(lv_obj_t* canvas, lv_point_t from, lv_point_t to,
             for (int oy = -3; oy <= 3; oy++) {
                 int px = cx + ox;
                 int py = cy + oy;
-                if (px >= 0 && px < 640 && py >= 0 && py < 480) {
+                if (px >= 0 && px < UI_WIDTH && py >= 0 && py < UI_HEIGHT) {
                     lv_canvas_set_px(canvas, px, py, color, LV_OPA_COVER);
                 }
             }
@@ -1236,7 +1237,7 @@ void factory_flash_test(lv_ui_t* ui)
     // 创建闪光灯测试窗口
     obj_flash_test_s = lv_obj_create(NULL);
     lv_obj_remove_style_all(obj_flash_test_s);
-    lv_obj_set_size(obj_flash_test_s, 640, 480);
+    lv_obj_set_size(obj_flash_test_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_flash_test_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_opa(obj_flash_test_s, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(obj_flash_test_s, lv_color_hex(0x1A1A1A), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1246,14 +1247,14 @@ void factory_flash_test(lv_ui_t* ui)
     // 创建顶部栏
     lv_obj_t* top_bar = lv_obj_create(obj_flash_test_s);
     lv_obj_remove_style_all(top_bar);
-    lv_obj_set_size(top_bar, 640, 60);
+    lv_obj_set_size(top_bar, UI_X(640), UI_Y(60));
     lv_obj_set_pos(top_bar, 0, 0);
     lv_obj_set_style_bg_color(top_bar, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
 
     // 创建返回按钮
     lv_obj_t* btn_back = lv_btn_create(top_bar);
-    lv_obj_set_size(btn_back, 80, 50);
-    lv_obj_set_pos(btn_back, 10, 5);
+    lv_obj_set_size(btn_back, UI_X(80), UI_Y(50));
+    lv_obj_set_pos(btn_back, UI_X(10), UI_Y(5));
     lv_obj_set_style_bg_color(btn_back, lv_color_hex(0x404040), LV_PART_MAIN);
     lv_obj_set_style_radius(btn_back, 10, LV_PART_MAIN);
     lv_obj_add_event_cb(btn_back, flash_test_exit_callback, LV_EVENT_CLICKED, NULL);
@@ -1276,13 +1277,13 @@ void factory_flash_test(lv_ui_t* ui)
     lv_label_set_text(hint_label, "Press UP to toggle flash ON/OFF");
     lv_obj_set_style_text_font(hint_label, &lv_font_montserrat_18, LV_PART_MAIN);
     lv_obj_set_style_text_color(hint_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_set_pos(hint_label, 20, 80);
+    lv_obj_set_pos(hint_label, UI_X(20), UI_Y(80));
 
     // 创建状态显示区域
     lv_obj_t* status_bg = lv_obj_create(obj_flash_test_s);
     lv_obj_remove_style_all(status_bg);
-    lv_obj_set_size(status_bg, 300, 150);
-    lv_obj_align(status_bg, LV_ALIGN_CENTER, 0, -50);
+    lv_obj_set_size(status_bg, UI_X(300), UI_Y(150));
+    lv_obj_align(status_bg, LV_ALIGN_CENTER, 0, UI_Y(-50));
     lv_obj_set_style_bg_color(status_bg, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
     lv_obj_set_style_radius(status_bg, 20, LV_PART_MAIN);
 
@@ -1298,7 +1299,7 @@ void factory_flash_test(lv_ui_t* ui)
     lv_label_set_text(hint_label2, "UP: Toggle Flash | MENU: Exit");
     lv_obj_set_style_text_font(hint_label2, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_set_style_text_color(hint_label2, lv_color_hex(0x888888), LV_PART_MAIN);
-    lv_obj_align(hint_label2, LV_ALIGN_CENTER, 0, 80);
+    lv_obj_align(hint_label2, LV_ALIGN_CENTER, 0, UI_Y(80));
 
     // 初始化闪光灯状态为关闭
     flash_is_on = false;
@@ -1503,7 +1504,7 @@ void factory_wifi_test(lv_ui_t* ui)
     // 创建工厂WiFi测试窗口
     obj_factory_wifi_s = lv_obj_create(NULL);
     lv_obj_remove_style_all(obj_factory_wifi_s);
-    lv_obj_set_size(obj_factory_wifi_s, 640, 480);
+    lv_obj_set_size(obj_factory_wifi_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_factory_wifi_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_bg_opa(obj_factory_wifi_s, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(obj_factory_wifi_s, lv_color_hex(0x1A1A1A), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -1513,14 +1514,14 @@ void factory_wifi_test(lv_ui_t* ui)
     // 创建顶部栏
     lv_obj_t* top_bar = lv_obj_create(obj_factory_wifi_s);
     lv_obj_remove_style_all(top_bar);
-    lv_obj_set_size(top_bar, 640, 60);
+    lv_obj_set_size(top_bar, UI_X(640), UI_Y(60));
     lv_obj_set_pos(top_bar, 0, 0);
     lv_obj_set_style_bg_color(top_bar, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
 
     // 创建返回按钮
     lv_obj_t* btn_back = lv_btn_create(top_bar);
-    lv_obj_set_size(btn_back, 80, 50);
-    lv_obj_set_pos(btn_back, 10, 5);
+    lv_obj_set_size(btn_back, UI_X(80), UI_Y(50));
+    lv_obj_set_pos(btn_back, UI_X(10), UI_Y(5));
     lv_obj_set_style_bg_color(btn_back, lv_color_hex(0x404040), LV_PART_MAIN);
     lv_obj_set_style_radius(btn_back, 10, LV_PART_MAIN);
     lv_obj_add_event_cb(btn_back, factory_wifi_exit_callback, LV_EVENT_CLICKED, NULL);
@@ -1541,15 +1542,15 @@ void factory_wifi_test(lv_ui_t* ui)
     // 创建WiFi信息显示容器
     lv_obj_t* info_container = lv_obj_create(obj_factory_wifi_s);
     lv_obj_remove_style_all(info_container);
-    lv_obj_set_size(info_container, 500, 300);
+    lv_obj_set_size(info_container, UI_X(500), UI_Y(300));
     lv_obj_align(info_container, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_bg_color(info_container, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
     lv_obj_set_style_radius(info_container, 20, LV_PART_MAIN);
 
     // WiFi图标
-    lv_obj_t* wifi_icon = lv_img_create(info_container);
+    lv_obj_t* wifi_icon = ui_image_create(info_container);
     lv_img_set_src(wifi_icon, "F:/sys-wifi.png");
-    lv_obj_align(wifi_icon, LV_ALIGN_TOP_MID, 0, 30);
+    lv_obj_align(wifi_icon, LV_ALIGN_TOP_MID, 0, UI_Y(30));
     lv_obj_set_style_image_recolor(wifi_icon, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     lv_obj_set_style_image_recolor_opa(wifi_icon, LV_OPA_COVER, LV_PART_MAIN);
 
@@ -1558,19 +1559,19 @@ void factory_wifi_test(lv_ui_t* ui)
     lv_label_set_text(wifi_name_label, "Loading...");
     lv_obj_add_style(wifi_name_label, &ttf_font_24, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(wifi_name_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_align(wifi_name_label, LV_ALIGN_TOP_MID, 0, 100);
+    lv_obj_align(wifi_name_label, LV_ALIGN_TOP_MID, 0, UI_Y(100));
 
     // 信号强度区域
     lv_obj_t* signal_container = lv_obj_create(info_container);
     lv_obj_remove_style_all(signal_container);
-    lv_obj_set_size(signal_container, 400, 100);
-    lv_obj_align(signal_container, LV_ALIGN_BOTTOM_MID, 0, 20);
+    lv_obj_set_size(signal_container, UI_X(400), UI_Y(100));
+    lv_obj_align(signal_container, LV_ALIGN_BOTTOM_MID, 0, UI_Y(20));
     lv_obj_set_style_bg_opa(signal_container, LV_OPA_0, LV_PART_MAIN);
 
     // 信号强度图标
-    wifi_signal_img = lv_img_create(signal_container);
+    wifi_signal_img = ui_image_create(signal_container);
     lv_img_set_src(wifi_signal_img, "F:/sys-wifi.png");
-    lv_obj_align(wifi_signal_img, LV_ALIGN_LEFT_MID, 20, 0);
+    lv_obj_align(wifi_signal_img, LV_ALIGN_LEFT_MID, UI_X(20), 0);
     lv_obj_set_style_image_recolor(wifi_signal_img, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     lv_obj_set_style_image_recolor_opa(wifi_signal_img, LV_OPA_COVER, LV_PART_MAIN);
 
@@ -1579,14 +1580,14 @@ void factory_wifi_test(lv_ui_t* ui)
     lv_label_set_text(wifi_signal_label, "-- dBm");
     lv_obj_set_style_text_font(wifi_signal_label, &lv_font_montserrat_48, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(wifi_signal_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
-    lv_obj_align_to(wifi_signal_label, wifi_signal_img, LV_ALIGN_OUT_RIGHT_MID, 40, 0);
+    lv_obj_align_to(wifi_signal_label, wifi_signal_img, LV_ALIGN_OUT_RIGHT_MID, UI_X(40), 0);
 
     // 创建操作提示
     lv_obj_t* hint_label = lv_label_create(obj_factory_wifi_s);
     lv_label_set_text(hint_label, "MENU: Exit");
     lv_obj_set_style_text_font(hint_label, &lv_font_montserrat_16, LV_PART_MAIN);
     lv_obj_set_style_text_color(hint_label, lv_color_hex(0x888888), LV_PART_MAIN);
-    lv_obj_align(hint_label, LV_ALIGN_BOTTOM_MID, 0, -20);
+    lv_obj_align(hint_label, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-20));
 
     // 如果WiFi未开启，自动开启WiFi
     int wifi_enabled = param_manager_get(PARAM_ID_WIFI_ENABLED);

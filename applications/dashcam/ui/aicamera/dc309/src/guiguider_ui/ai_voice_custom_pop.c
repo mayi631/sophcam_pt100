@@ -2,6 +2,7 @@
 /*********************
  *      INCLUDES
  *********************/
+#include "ui_layout.h"
 #include "common/extract_thumbnail.h"
 #include "custom.h"
 #include "filemng.h"
@@ -86,8 +87,8 @@ void create_voice_input_popup(void)
 
     // 创建弹框容器
     lv_obj_t *voice_input_popup_dispaly = lv_obj_create(voice_input_popup);
-    lv_obj_set_size(voice_input_popup_dispaly, 400, 120);
-    lv_obj_align(voice_input_popup_dispaly, LV_ALIGN_TOP_MID, 0, 100);
+    lv_obj_set_size(voice_input_popup_dispaly, UI_X(400), UI_Y(120));
+    lv_obj_align(voice_input_popup_dispaly, LV_ALIGN_TOP_MID, 0, UI_Y(100));
 
     // 现代化样式
     lv_obj_set_style_bg_color(voice_input_popup_dispaly, lv_color_hex(0x1E1E2E), 0);
@@ -96,7 +97,7 @@ void create_voice_input_popup(void)
     lv_obj_set_style_border_width(voice_input_popup_dispaly, 0, 0);
     lv_obj_set_style_shadow_width(voice_input_popup_dispaly, 50, 0);
     lv_obj_set_style_shadow_opa(voice_input_popup_dispaly, LV_OPA_30, 0);
-    lv_obj_set_style_pad_all(voice_input_popup_dispaly, 20, 0);
+    lv_obj_set_style_pad_all(voice_input_popup_dispaly, UI_X(20), 0);
     lv_obj_set_style_text_align(voice_input_popup_dispaly, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 语音文本
@@ -105,12 +106,12 @@ void create_voice_input_popup(void)
     lv_obj_set_style_text_color(voice_text_label, lv_color_white(), 0);
     lv_obj_set_style_text_font(voice_text_label, get_usr_fonts(ALI_PUHUITI_FONTPATH, 20), 0);
     lv_obj_align(voice_text_label, LV_ALIGN_LEFT_MID, 0, 0);
-    lv_obj_set_size(voice_text_label, 360,80);
+    lv_obj_set_size(voice_text_label, UI_X(360),UI_Y(80));
 
     // 确认按钮
     ai_voice_confirm_btn = lv_btn_create(voice_input_popup);
-    lv_obj_set_size(ai_voice_confirm_btn, 120, 42);
-    lv_obj_align(ai_voice_confirm_btn, LV_ALIGN_BOTTOM_LEFT, 120, -140);
+    lv_obj_set_size(ai_voice_confirm_btn, UI_X(120), UI_Y(42));
+    lv_obj_align(ai_voice_confirm_btn, LV_ALIGN_BOTTOM_LEFT, UI_X(120), UI_Y(-140));
     lv_obj_set_style_bg_color(ai_voice_confirm_btn, lv_color_hex(0x007AFF), 0);
     lv_obj_set_style_pad_all(ai_voice_confirm_btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_flag(ai_voice_confirm_btn, LV_OBJ_FLAG_HIDDEN);
@@ -123,8 +124,8 @@ void create_voice_input_popup(void)
 
     // 取消按钮
     ai_voice_cancel_btn = lv_btn_create(voice_input_popup);
-    lv_obj_set_size(ai_voice_cancel_btn, 120, 42);
-    lv_obj_align(ai_voice_cancel_btn, LV_ALIGN_BOTTOM_RIGHT, -120, -140);
+    lv_obj_set_size(ai_voice_cancel_btn, UI_X(120), UI_Y(42));
+    lv_obj_align(ai_voice_cancel_btn, LV_ALIGN_BOTTOM_RIGHT, UI_X(-120), UI_Y(-140));
     lv_obj_set_style_bg_color(ai_voice_cancel_btn, lv_color_hex(0x333333), 0);
     lv_obj_set_style_pad_all(ai_voice_cancel_btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_add_flag(ai_voice_cancel_btn, LV_OBJ_FLAG_HIDDEN);

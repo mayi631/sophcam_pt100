@@ -1,0 +1,15 @@
+diff --git a/src/mapi_disp.c b/src/mapi_disp.c
+--- a/src/mapi_disp.c
++++ b/src/mapi_disp.c
+@@ -205,6 +205,11 @@ static int MAPI_DISP_GetVideoLayerSize(const VO_PUB_ATTR_S *pstPubAttr,
+         *pu32H = 480;
+         *pu32Frm = 60;
+         break;
++    case VO_OUTPUT_480x640_60:
++        *pu32W = 480;
++        *pu32H = 640;
++        *pu32Frm = 60;
++        break;
+     case VO_OUTPUT_720x1280_60:
+         *pu32W = 720;
+         *pu32H = 1280;

@@ -7,6 +7,7 @@
  * terms, then you may not retain, install, activate or otherwise use the software.
  */
 // #define DEBUG
+#include "ui_layout.h"
 #include "config.h"
 #include "custom.h"
 #include "gui_guider.h"
@@ -384,7 +385,7 @@ void sysMenu_Time_Scroll_Create(uint8_t index)
    // 创建浮动窗口
     setScroll_Float_s = lv_obj_create(setTimeAndDate_Win_s);
     lv_obj_remove_style_all(setScroll_Float_s);
-    lv_obj_set_size(setScroll_Float_s, 500, 300); // 更紧凑的尺寸
+    lv_obj_set_size(setScroll_Float_s, UI_X(500), UI_Y(300)); // 更紧凑的尺寸
     lv_obj_align(setScroll_Float_s, LV_ALIGN_CENTER, 0, 0);
     lv_obj_set_style_bg_opa(setScroll_Float_s, LV_OPA_80, LV_PART_MAIN);
     lv_obj_set_style_bg_color(setScroll_Float_s, lv_color_hex(0x1A1A1A), LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -402,18 +403,18 @@ void sysMenu_Time_Scroll_Create(uint8_t index)
     lv_label_set_text(title_label, titles[index]);
     lv_obj_set_style_text_font(title_label, get_usr_fonts(ALI_PUHUITI_FONTPATH, MENU_FONT_SIZE), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_text_color(title_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, 15);
+    lv_obj_align(title_label, LV_ALIGN_TOP_MID, 0, UI_Y(15));
 
     // 创建滚轮容器
     lv_obj_t *roller_cont = lv_obj_create(setScroll_Float_s);
     lv_obj_remove_style_all(roller_cont);
-    lv_obj_set_size(roller_cont, 200, 160);
-    lv_obj_align(roller_cont, LV_ALIGN_CENTER, 0, -10);
+    lv_obj_set_size(roller_cont, UI_X(200), UI_Y(160));
+    lv_obj_align(roller_cont, LV_ALIGN_CENTER, 0, UI_Y(-10));
     lv_obj_set_style_bg_opa(roller_cont, LV_OPA_0, LV_PART_MAIN);
 
     // 创建滚轮
     time_Roller_s = lv_roller_create(roller_cont);
-    lv_obj_set_size(time_Roller_s, 200, 160);
+    lv_obj_set_size(time_Roller_s, UI_X(200), UI_Y(160));
     lv_obj_set_style_text_font(time_Roller_s, get_usr_fonts(ALI_PUHUITI_FONTPATH, 24), LV_PART_MAIN);
     lv_obj_set_style_text_font(time_Roller_s, get_usr_fonts(ALI_PUHUITI_FONTPATH, 32), LV_PART_SELECTED);
     lv_obj_set_style_bg_color(time_Roller_s, lv_color_hex(0), LV_PART_MAIN);
@@ -481,7 +482,7 @@ void sysMenu_Time_Scroll_Create(uint8_t index)
     // 创建按钮容器
     lv_obj_t *btn_cont = lv_obj_create(setScroll_Float_s);
     lv_obj_remove_style_all(btn_cont);
-    lv_obj_set_size(btn_cont, 300, 60);
+    lv_obj_set_size(btn_cont, UI_X(300), UI_Y(60));
     lv_obj_align(btn_cont, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_flex_flow(btn_cont, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(btn_cont, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
@@ -491,7 +492,7 @@ void sysMenu_Time_Scroll_Create(uint8_t index)
 
     // 创建取消按钮
     lv_obj_t *btn_cancel = lv_btn_create(btn_cont);
-    lv_obj_set_size(btn_cancel, 120, 50);
+    lv_obj_set_size(btn_cancel, UI_X(120), UI_Y(50));
     lv_obj_set_style_bg_color(btn_cancel, lv_color_hex(0x404040), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(btn_cancel, lv_color_hex(0x505050), LV_PART_MAIN | LV_STATE_PRESSED);
     lv_obj_set_style_radius(btn_cancel, 15, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -508,7 +509,7 @@ void sysMenu_Time_Scroll_Create(uint8_t index)
 
     // 创建确定按钮
     lv_obj_t *btn_ok = lv_btn_create(btn_cont);
-    lv_obj_set_size(btn_ok, 120, 50);
+    lv_obj_set_size(btn_ok, UI_X(120), UI_Y(50));
     lv_obj_set_style_bg_color(btn_ok, lv_color_hex(0xFFD600), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(btn_ok, lv_color_hex(0xFFC000), LV_PART_MAIN | LV_STATE_PRESSED);
     lv_obj_set_style_radius(btn_ok, 15, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -544,21 +545,21 @@ static void sysMenu_TimeAndData_Setting_Create(void)
 
     setTimeAndDate_Win_s = lv_obj_create(obj_sysMenu_Time_s);
     lv_obj_remove_style_all(setTimeAndDate_Win_s);
-    lv_obj_set_size(setTimeAndDate_Win_s, 640, 480);
+    lv_obj_set_size(setTimeAndDate_Win_s, UI_X(640), UI_Y(480));
     lv_obj_align(setTimeAndDate_Win_s, LV_ALIGN_DEFAULT, 0, 0);
     lv_obj_set_style_bg_opa(setTimeAndDate_Win_s, LV_OPA_100, LV_PART_MAIN);
 
     // Write codes cont_top (顶部栏)
     lv_obj_t *cont_top = lv_obj_create(setTimeAndDate_Win_s);
     lv_obj_set_pos(cont_top, 0, 0);
-    lv_obj_set_size(cont_top, 640, 60);
+    lv_obj_set_size(cont_top, UI_X(640), UI_Y(60));
     lv_obj_set_scrollbar_mode(cont_top, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(cont_top, &style_common_cont_top, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // Write codes btn_back (返回按钮)
     lv_obj_t* btn_back = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_back, 4, 4);
-    lv_obj_set_size(btn_back, 100, 52);
+    lv_obj_set_pos(btn_back, UI_X(4), UI_Y(4));
+    lv_obj_set_size(btn_back, UI_X(100), UI_Y(52));
     lv_obj_add_style(btn_back, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t* label_back = lv_label_create(btn_back);
@@ -580,8 +581,8 @@ static void sysMenu_TimeAndData_Setting_Create(void)
 
     lv_obj_t* flex_Float = lv_obj_create(setTimeAndDate_Win_s);
     lv_obj_remove_style_all(flex_Float);
-    lv_obj_set_size(flex_Float, 640, 420);
-    lv_obj_align(flex_Float, LV_ALIGN_DEFAULT, 0, 60);
+    lv_obj_set_size(flex_Float, UI_X(640), UI_Y(420));
+    lv_obj_align(flex_Float, LV_ALIGN_DEFAULT, 0, UI_Y(60));
     lv_obj_set_style_bg_color(flex_Float, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(flex_Float, LV_OPA_100, LV_PART_MAIN);
     lv_obj_set_flex_flow(flex_Float, LV_FLEX_FLOW_ROW_WRAP);
@@ -589,7 +590,7 @@ static void sysMenu_TimeAndData_Setting_Create(void)
     // 创建样式并设置列间隔（间隔）
     static lv_style_t style;
     lv_style_init(&style);
-    lv_style_set_pad_column(&style, 20); // 设置行间隔为10像素
+    lv_style_set_pad_column(&style, UI_X(20)); // 设置行间隔为10像素
     // 将样式应用到父对象
     lv_obj_add_style(flex_Float, &style, 0);
 
@@ -597,7 +598,7 @@ static void sysMenu_TimeAndData_Setting_Create(void)
     for(uint8_t i = 0; i < TIME_NUM; i++) {
         lv_obj_t *box = lv_obj_create(flex_Float); //创建6个容器
         lv_obj_remove_style_all(box);
-        lv_obj_set_size(box, 160, 160);
+        lv_obj_set_size(box, UI_X(160), UI_Y(160));
         lv_obj_set_style_bg_color(box, lv_color_hex(0x000000), LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_align(box, LV_ALIGN_TOP_LEFT, 0, 0);
         lv_obj_set_style_bg_opa(box, LV_OPA_50, LV_PART_MAIN);
@@ -610,7 +611,7 @@ static void sysMenu_TimeAndData_Setting_Create(void)
         lv_obj_set_style_text_color(label_words, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT);
 
         lv_obj_t *btn = lv_button_create(box); //创建按钮
-        lv_obj_set_size(btn, 160, 80);
+        lv_obj_set_size(btn, UI_X(160), UI_Y(80));
         lv_obj_align(btn, LV_ALIGN_CENTER, 0, 0);
         lv_obj_set_style_bg_color(btn, lv_color_hex(0x171717), LV_PART_MAIN);
         lv_obj_set_style_bg_opa(btn, LV_OPA_50, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -633,7 +634,7 @@ static void sysMenu_TimeAndData_Setting_Create(void)
 
     // 在上方添加一条分割线
     lv_obj_t *up_line                       = lv_line_create(obj_sysMenu_Time_s);
-    static lv_point_precise_t points_line[] = {{10, 60}, {640, 60}};
+    static lv_point_precise_t points_line[] = {{UI_X(10), UI_Y(60)}, {UI_X(640), UI_Y(60)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);
@@ -752,7 +753,7 @@ void sysMenu_Time(lv_ui_t *ui)
 
     // Write codes resscr
     obj_sysMenu_Time_s = lv_obj_create(NULL);
-    lv_obj_set_size(obj_sysMenu_Time_s, 640, 480);
+    lv_obj_set_size(obj_sysMenu_Time_s, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(obj_sysMenu_Time_s, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_pad_all(obj_sysMenu_Time_s, 0, 0);
     lv_obj_add_event_cb(obj_sysMenu_Time_s, gesture_event_handler, LV_EVENT_GESTURE, ui);
@@ -766,7 +767,7 @@ void sysMenu_Time(lv_ui_t *ui)
     // Write codes cont_top (顶部栏)
     lv_obj_t *cont_top = lv_obj_create(obj_sysMenu_Time_s);
     lv_obj_set_pos(cont_top, 0, 0);
-    lv_obj_set_size(cont_top, 640, 60);
+    lv_obj_set_size(cont_top, UI_X(640), UI_Y(60));
     lv_obj_set_scrollbar_mode(cont_top, LV_SCROLLBAR_MODE_OFF);
 
     // Write style for cont_top, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
@@ -783,8 +784,8 @@ void sysMenu_Time(lv_ui_t *ui)
 
     // Write codes btn_back (返回按钮)
     lv_obj_t* btn_back = lv_button_create(cont_top);
-    lv_obj_set_pos(btn_back, 4, 4);
-    lv_obj_set_size(btn_back, 100, 52);
+    lv_obj_set_pos(btn_back, UI_X(4), UI_Y(4));
+    lv_obj_set_size(btn_back, UI_X(100), UI_Y(52));
     lv_obj_set_style_bg_color(btn_back, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     lv_obj_t* label_back = lv_label_create(btn_back);
@@ -818,13 +819,13 @@ void sysMenu_Time(lv_ui_t *ui)
 
     // 创建设置选项容器
     lv_obj_t *settings_cont = lv_obj_create(obj_sysMenu_Time_s);
-    lv_obj_set_size(settings_cont, 600, MENU_CONT_SIZE);
-    lv_obj_align(settings_cont, LV_ALIGN_TOP_MID, 0, 64);
+    lv_obj_set_size(settings_cont, UI_X(600), UI_Y(MENU_CONT_SIZE));
+    lv_obj_align(settings_cont, LV_ALIGN_TOP_MID, 0, UI_Y(64));
     lv_obj_set_style_bg_opa(settings_cont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(settings_cont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     // lv_obj_set_flex_flow(settings_cont, LV_FLEX_FLOW_COLUMN);
     // lv_obj_set_flex_align(settings_cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_all(settings_cont, 10, 0);
+    lv_obj_set_style_pad_all(settings_cont, UI_X(10), 0);
     sysmenu_time_btn_labels[0] = str_language_on[get_curr_language()];
     sysmenu_time_btn_labels[1] = str_language_off[get_curr_language()];
     sysmenu_time_btn_labels[2] = str_language_time_settings[get_curr_language()];
@@ -834,8 +835,8 @@ void sysMenu_Time(lv_ui_t *ui)
         lv_obj_t *btn = lv_button_create(settings_cont);
         if(!btn) continue; // 如果按钮创建失败则跳过
 
-        lv_obj_set_size(btn, 560, MENU_BTN_SIZE);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, (MENU_BTN_SIZE + 10) * i);
+        lv_obj_set_size(btn, UI_X(560), UI_Y(MENU_BTN_SIZE));
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, UI_Y((MENU_BTN_SIZE + 10) * i));
         lv_obj_set_style_bg_opa(btn, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -868,10 +869,10 @@ void sysMenu_Time(lv_ui_t *ui)
         lv_obj_t *line = lv_line_create(settings_cont);
         int y_position = (MENU_BTN_SIZE + 10) * (i + 1) - 4; // 计算y坐标  //横线在下方,且第一个btn不用画线
         // 使用点数组池中的第i组
-        line_points_pool[i][0].x = 10;
-        line_points_pool[i][0].y = y_position;
-        line_points_pool[i][1].x = 570;
-        line_points_pool[i][1].y = y_position;
+        line_points_pool[i][0].x = UI_X(10);
+        line_points_pool[i][0].y = UI_Y(y_position);
+        line_points_pool[i][1].x = UI_X(570);
+        line_points_pool[i][1].y = UI_Y(y_position);
         lv_line_set_points(line, line_points_pool[i], 2);
         lv_obj_set_style_line_width(line, 2, 0);
         lv_obj_set_style_line_color(line, lv_color_hex(0x5F5F5F), 0);
@@ -882,7 +883,7 @@ void sysMenu_Time(lv_ui_t *ui)
     lv_obj_t *chlid = lv_obj_get_child(settings_cont, timeSelect_Index_s);
     lv_group_focus_obj(chlid);
     lv_obj_add_state(chlid, LV_STATE_FOCUS_KEY);
-    lv_obj_scroll_to_y(settings_cont, ((timeSelect_Index_s / 2) * MENU_BTN_SIZE), LV_ANIM_OFF);
+    lv_obj_scroll_to_y(settings_cont, UI_Y(((timeSelect_Index_s / 2) * MENU_BTN_SIZE)), LV_ANIM_OFF);
     //设置焦点渐变
     // lv_set_obj_grad_style(chlid, LV_GRAD_DIR_VER, lv_color_hex(0xFBDEBD), lv_color_hex(0xF09F20));
     // //设置焦点BG
@@ -893,7 +894,7 @@ void sysMenu_Time(lv_ui_t *ui)
 
     // 在上方添加一条分割线
     lv_obj_t *up_line                       = lv_line_create(obj_sysMenu_Time_s);
-    static lv_point_precise_t points_line[] = {{10, 60}, {640, 60}};
+    static lv_point_precise_t points_line[] = {{UI_X(10), UI_Y(60)}, {UI_X(640), UI_Y(60)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);

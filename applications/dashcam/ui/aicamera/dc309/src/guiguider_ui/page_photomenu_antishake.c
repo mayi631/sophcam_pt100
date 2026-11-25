@@ -7,6 +7,7 @@
  * terms, then you may not retain, install, activate or otherwise use the software.
  */
 
+#include "ui_layout.h"
 #include "config.h"
 #include "custom.h"
 #include "gui_guider.h"
@@ -237,7 +238,7 @@ void photoMenu_AntiShake(lv_ui_t *ui)
 
     // Write codes scr
     SettingAntiShake->shake_scr = lv_obj_create(NULL);
-    lv_obj_set_size(SettingAntiShake->shake_scr, 640, 480);
+    lv_obj_set_size(SettingAntiShake->shake_scr, UI_X(640), UI_Y(480));
     lv_obj_set_scrollbar_mode(SettingAntiShake->shake_scr, LV_SCROLLBAR_MODE_OFF);
     lv_obj_set_style_pad_all(SettingAntiShake->shake_scr, 0, 0);
 
@@ -251,14 +252,14 @@ void photoMenu_AntiShake(lv_ui_t *ui)
     // Write codes cont_top (顶部栏)
     SettingAntiShake->cont_top = lv_obj_create(SettingAntiShake->shake_scr);
     lv_obj_set_pos(SettingAntiShake->cont_top, 0, 0);
-    lv_obj_set_size(SettingAntiShake->cont_top, 640, 60);
+    lv_obj_set_size(SettingAntiShake->cont_top, UI_X(640), UI_Y(60));
     lv_obj_set_scrollbar_mode(SettingAntiShake->cont_top, LV_SCROLLBAR_MODE_OFF);
     lv_obj_add_style(SettingAntiShake->cont_top, &style_common_cont_top, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // Write codes btn_back (返回按钮)
     SettingAntiShake->btn_back = lv_button_create(SettingAntiShake->cont_top);
-    lv_obj_set_pos(SettingAntiShake->btn_back, 4, 4);
-    lv_obj_set_size(SettingAntiShake->btn_back, 100, 52);
+    lv_obj_set_pos(SettingAntiShake->btn_back, UI_X(4), UI_Y(4));
+    lv_obj_set_size(SettingAntiShake->btn_back, UI_X(100), UI_Y(52));
     lv_obj_add_style(SettingAntiShake->btn_back, &style_common_btn_back, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     SettingAntiShake->label_back = lv_label_create(SettingAntiShake->btn_back);
@@ -278,14 +279,14 @@ void photoMenu_AntiShake(lv_ui_t *ui)
     lv_obj_align(SettingAntiShake->title, LV_ALIGN_CENTER, 0, 0);
     // Write codes cont_settings (设置选项容器)
     SettingAntiShake->cont_settings = lv_obj_create(SettingAntiShake->shake_scr);
-    lv_obj_set_size(SettingAntiShake->cont_settings, 600, MENU_CONT_SIZE);
-    lv_obj_align(SettingAntiShake->cont_settings, LV_ALIGN_TOP_MID, 0, 64);
+    lv_obj_set_size(SettingAntiShake->cont_settings, UI_X(600), UI_Y(MENU_CONT_SIZE));
+    lv_obj_align(SettingAntiShake->cont_settings, LV_ALIGN_TOP_MID, 0, UI_Y(64));
     lv_obj_set_style_bg_opa(SettingAntiShake->cont_settings, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(SettingAntiShake->cont_settings, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     // lv_obj_set_flex_flow(SettingAntiShake->cont_settings, LV_FLEX_FLOW_COLUMN);
     // lv_obj_set_flex_align(SettingAntiShake->cont_settings, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER,
     //                       LV_FLEX_ALIGN_CENTER);
-    lv_obj_set_style_pad_all(SettingAntiShake->cont_settings, 10, 0);
+    lv_obj_set_style_pad_all(SettingAntiShake->cont_settings, UI_X(10), 0);
 
     // 创建设置按钮
     const char *btn_labels[] = {str_language_on[get_curr_language()], str_language_off[get_curr_language()]};
@@ -294,8 +295,8 @@ void photoMenu_AntiShake(lv_ui_t *ui)
         lv_obj_t *btn = lv_button_create(SettingAntiShake->cont_settings);
         if(!btn) continue; // 如果按钮创建失败则跳过
 
-        lv_obj_set_size(btn, 560, MENU_BTN_SIZE);
-        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, (MENU_BTN_SIZE + 10) * i);
+        lv_obj_set_size(btn, UI_X(560), UI_Y(MENU_BTN_SIZE));
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, 0, UI_Y((MENU_BTN_SIZE + 10) * i));
         lv_obj_set_style_bg_opa(btn, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_border_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -328,10 +329,10 @@ void photoMenu_AntiShake(lv_ui_t *ui)
         lv_obj_t *line = lv_line_create(SettingAntiShake->cont_settings);
         int y_position = (MENU_BTN_SIZE + 10) * (i + 1) - 4; // 计算y坐标  //横线在下方,且第一个btn不用画线
         // 使用点数组池中的第i组
-        line_points_pool[i][0].x = 10;
-        line_points_pool[i][0].y = y_position;
-        line_points_pool[i][1].x = 570;
-        line_points_pool[i][1].y = y_position;
+        line_points_pool[i][0].x = UI_X(10);
+        line_points_pool[i][0].y = UI_Y(y_position);
+        line_points_pool[i][1].x = UI_X(570);
+        line_points_pool[i][1].y = UI_Y(y_position);
         lv_line_set_points(line, line_points_pool[i], 2);
         lv_obj_set_style_line_width(line, 2, 0);
         lv_obj_set_style_line_color(line, lv_color_hex(0x5F5F5F), 0);
@@ -339,7 +340,7 @@ void photoMenu_AntiShake(lv_ui_t *ui)
     //先设置焦点控件,再进行滚动,否则会直接滚动到最下,不知什么原因.
     lv_group_focus_obj(lv_obj_get_child(SettingAntiShake->cont_settings, antiShake_Current_Index_s));
     lv_obj_add_state(lv_obj_get_child(SettingAntiShake->cont_settings, antiShake_Current_Index_s), LV_STATE_FOCUS_KEY);
-    lv_obj_scroll_to_y(SettingAntiShake->cont_settings, ((antiShake_Current_Index_s / 2) * MENU_BTN_SIZE), LV_ANIM_OFF);
+    lv_obj_scroll_to_y(SettingAntiShake->cont_settings, UI_Y(((antiShake_Current_Index_s / 2) * MENU_BTN_SIZE)), LV_ANIM_OFF);
     //获取焦点控件
     lv_obj_t *chlid = lv_obj_get_child(SettingAntiShake->cont_settings, antiShake_Current_Index_s);
     //设置焦点渐变
@@ -352,7 +353,7 @@ void photoMenu_AntiShake(lv_ui_t *ui)
 
     // 在上方添加一条分割线
     lv_obj_t *up_line                       = lv_line_create(SettingAntiShake->shake_scr);
-    static lv_point_precise_t points_line[] = {{10, 60}, {640, 60}};
+    static lv_point_precise_t points_line[] = {{UI_X(10), UI_Y(60)}, {UI_X(640), UI_Y(60)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);

@@ -65,6 +65,9 @@ extern const char *str_language_album[NUM_LANGUAGES]; // 相册
 extern const char *str_language_ai_chat[NUM_LANGUAGES]; // AI畅聊
 extern const char *str_language_photo_translation[NUM_LANGUAGES]; // 拍照翻译
 extern const char *str_language_settings[NUM_LANGUAGES]; // 设置
+extern const char *str_language_photo_settings[NUM_LANGUAGES];
+extern const char *str_language_video_settings[NUM_LANGUAGES];
+extern const char *str_language_system_settings[NUM_LANGUAGES];
 extern const char *str_language_auto[NUM_LANGUAGES]; // 自动
 extern const char *str_language_iso[NUM_LANGUAGES]; // 感光度
 extern const char *str_language_shooting_mode[NUM_LANGUAGES]; // 拍摄模式

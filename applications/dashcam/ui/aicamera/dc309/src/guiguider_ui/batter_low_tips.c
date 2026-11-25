@@ -2,6 +2,7 @@
 /*********************
  *      INCLUDES
  *********************/
+#include "ui_layout.h"
 #include <stdio.h>
 #include "lvgl.h"
 #include <stdlib.h>
@@ -40,7 +41,7 @@ static bool check_battery(lv_obj_t *parent)
         } else {
             return false;
         }
-        lv_obj_set_size(mbox_s, 640 / 3, 480 / 3);
+        lv_obj_set_size(mbox_s, UI_X(640 / 3), UI_Y(480 / 3));
         lv_msgbox_add_text(mbox_s,str_language_low_battery[get_curr_language()]);
         lv_obj_set_style_text_color(mbox_s, lv_color_hex(0xFF0000), LV_PART_MAIN);
         lv_obj_set_style_bg_opa(mbox_s, LV_OPA_50, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -56,7 +57,7 @@ static bool check_battery(lv_obj_t *parent)
 
         lv_obj_add_event_cb(close_btn, batter_tips_wifi_event_cb, LV_EVENT_CLICKED, NULL);
         lv_obj_add_event_cb(confire_btn, batter_tips_wifi_event_cb, LV_EVENT_CLICKED, NULL);
-        lv_obj_align(mbox_s, LV_ALIGN_CENTER, 0, 8); // 底部居中位置
+        lv_obj_align(mbox_s, LV_ALIGN_CENTER, 0, UI_Y(8)); // 底部居中位置
         return false;
     }
 

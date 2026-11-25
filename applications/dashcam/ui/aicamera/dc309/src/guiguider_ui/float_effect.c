@@ -1,4 +1,6 @@
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "lvgl.h"
 #include <stdio.h>
 #include "gui_guider.h"
@@ -153,8 +155,8 @@ void float_effect_creat(lv_obj_t *img_handel, lv_obj_t *parent)
     img_effect_s = img_handel;
 
     effect_scroll_cont_s = lv_obj_create(parent);
-    lv_obj_set_size(effect_scroll_cont_s, 440, 90);
-    lv_obj_align(effect_scroll_cont_s, LV_ALIGN_BOTTOM_MID, 0, -58);
+    lv_obj_set_size(effect_scroll_cont_s, UI_X(440), UI_Y(90));
+    lv_obj_align(effect_scroll_cont_s, LV_ALIGN_BOTTOM_MID, 0, UI_Y(-58));
     lv_obj_set_style_bg_opa(effect_scroll_cont_s, LV_OPA_20, LV_PART_MAIN | LV_STATE_DEFAULT); // 透明背景
     lv_obj_set_style_shadow_width(effect_scroll_cont_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(effect_scroll_cont_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -197,8 +199,8 @@ void float_effect_creat(lv_obj_t *img_handel, lv_obj_t *parent)
     // 在容器内部创建多个对象，使其宽度超出容器
     for(uint32_t i = 0; i < sizeof(btn_labels) / sizeof(btn_labels[0]); i++) {
         lv_obj_t *btn = lv_btn_create(effect_scroll_cont_s);
-        lv_obj_set_size(btn, 76, 90);
-        lv_obj_align(btn, LV_ALIGN_LEFT_MID, (76 + 6) * i, 0);
+        lv_obj_set_size(btn, UI_X(76), UI_Y(90));
+        lv_obj_align(btn, LV_ALIGN_LEFT_MID, UI_X((76 + 6) * i), 0);
         lv_obj_set_style_pad_all(btn, 0, LV_STATE_DEFAULT);
         lv_obj_set_style_bg_color(btn, lv_color_hex(0x0), LV_PART_MAIN | LV_STATE_DEFAULT);
         lv_obj_set_style_shadow_width(btn, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -213,17 +215,17 @@ void float_effect_creat(lv_obj_t *img_handel, lv_obj_t *parent)
             lv_obj_scroll_to_view(btn, LV_ANIM_ON);
         }
 
-        lv_obj_t *img = lv_img_create(btn);
-        lv_obj_set_size(img, 76, 68);
+        lv_obj_t *img = ui_image_create(btn);
+        lv_obj_set_size(img, UI_X(76), UI_Y(68));
         lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_set_style_pad_all(img, 0, LV_STATE_DEFAULT);
         show_image(img, effect_style[i]);
 
         lv_obj_t *label = lv_label_create(btn);
         lv_obj_add_style(label, &ttf_font_16, LV_PART_MAIN | LV_STATE_DEFAULT);
-        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 70);
+        lv_obj_align(label, LV_ALIGN_TOP_MID, 0, UI_Y(70));
         lv_label_set_text_fmt(label, "%s", btn_labels[i]);
-        lv_obj_set_size(label, LV_PCT(100), 20);
+        lv_obj_set_size(label, LV_PCT(100), UI_Y(20));
         lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL); // 过长显示省略号
         lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
 

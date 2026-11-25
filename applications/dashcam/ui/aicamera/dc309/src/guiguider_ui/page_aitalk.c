@@ -1,4 +1,6 @@
 #define DEBUG
+#include "ui_layout.h"
+#include "ui_image.h"
 #include "config.h"
 #include "custom.h"
 #include "dialogxx.h"
@@ -427,7 +429,7 @@ static void page_message_list_create(void)
     lv_obj_clean(chat_scroll_s);
 
     // 当前Y轴位置
-    lv_coord_t current_y = 10;
+    lv_coord_t current_y = UI_Y(10);
 
     // 遍历所有消息
     for(uint8_t i = 0; i < self_message_s.text_index; i++)
@@ -440,12 +442,12 @@ static void page_message_list_create(void)
             lv_obj_set_style_radius(self_cont, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(self_cont, lv_color_hex(0x95EC69), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_opa(self_cont, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_pad_all(self_cont, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_pad_all(self_cont, UI_X(10), LV_PART_MAIN | LV_STATE_DEFAULT);
 
             // 用户消息文本
             lv_obj_t *text = lv_label_create(self_cont);
             lv_obj_set_width(text, lv_pct(80));
-            lv_obj_align(text, LV_ALIGN_LEFT_MID, 36, 0);
+            lv_obj_align(text, LV_ALIGN_LEFT_MID, UI_X(36), 0);
             lv_obj_add_style(text, &ttf_font_20, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(text, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(text, self_message_s.text[i]);
@@ -453,15 +455,15 @@ static void page_message_list_create(void)
             lv_obj_update_layout(text);
 
             // 用户头像
-            lv_obj_t *img_user = lv_img_create(self_cont);
-            lv_obj_set_size(img_user, 24, 24);
+            lv_obj_t *img_user = ui_image_create(self_cont);
+            lv_obj_set_size(img_user, UI_X(24), UI_X(24));
             lv_obj_align(img_user, LV_ALIGN_RIGHT_MID, 0, 0);
             show_image(img_user, "user.png");
 
             // 设置用户消息位置（右侧）
-            lv_coord_t x_pos = lv_obj_get_width(chat_scroll_s) - lv_obj_get_width(self_cont) - 20;
+            lv_coord_t x_pos = lv_obj_get_width(chat_scroll_s) - lv_obj_get_width(self_cont) - UI_X(20);
             lv_obj_set_pos(self_cont, x_pos, current_y);
-            current_y += lv_obj_get_height(self_cont) + 10;
+            current_y += lv_obj_get_height(self_cont) + UI_Y(10);
         }
 
         // 检查是否需要等待AI响应：最后一个asr，且没有llm应答
@@ -485,25 +487,25 @@ static void page_message_list_create(void)
             lv_obj_set_style_radius(waiting_cont, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(waiting_cont, lv_color_hex(0x95EC69), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_opa(waiting_cont, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_pad_all(waiting_cont, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_pad_all(waiting_cont, UI_X(10), LV_PART_MAIN | LV_STATE_DEFAULT);
 
             lv_obj_t *waiting_text = lv_label_create(waiting_cont);
             lv_obj_set_width(waiting_text, lv_pct(80));
-            lv_obj_align(waiting_text, LV_ALIGN_LEFT_MID, 36, 0);
+            lv_obj_align(waiting_text, LV_ALIGN_LEFT_MID, UI_X(36), 0);
             lv_obj_add_style(waiting_text, &ttf_font_20, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_text_color(waiting_text, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(waiting_text, str_language_waiting_for_response[get_curr_language()]);
             lv_obj_update_layout(waiting_text);
 
-            lv_obj_t *waiting_img = lv_img_create(waiting_cont);
-            lv_obj_set_size(waiting_img, 24, 24);
-            lv_obj_align(waiting_img, LV_ALIGN_LEFT_MID, 6, 0);
+            lv_obj_t *waiting_img = ui_image_create(waiting_cont);
+            lv_obj_set_size(waiting_img, UI_X(24), UI_X(24));
+            lv_obj_align(waiting_img, LV_ALIGN_LEFT_MID, UI_X(6), 0);
             show_image(waiting_img, "user.png");
 
             // 设置等待提示位置（左侧）
             // lv_coord_t x_pos = lv_obj_get_width(chat_scroll_s) - lv_obj_get_width(waiting_cont) - 20;
-            lv_obj_set_pos(waiting_cont, 10, current_y);
-            current_y += lv_obj_get_height(waiting_cont) + 10;
+            lv_obj_set_pos(waiting_cont, UI_X(10), current_y);
+            current_y += lv_obj_get_height(waiting_cont) + UI_Y(10);
         }
 
         // 如果AI消息存在，创建AI消息（左侧）
@@ -515,36 +517,36 @@ static void page_message_list_create(void)
             lv_obj_set_style_radius(ai_cont, 5, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_color(ai_cont, lv_color_hex(0x4A90E2), LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_obj_set_style_bg_opa(ai_cont, LV_OPA_COVER, LV_PART_MAIN | LV_STATE_DEFAULT);
-            lv_obj_set_style_pad_all(ai_cont, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+            lv_obj_set_style_pad_all(ai_cont, UI_X(10), LV_PART_MAIN | LV_STATE_DEFAULT);
 
             lv_obj_t *ai_text = lv_label_create(ai_cont);
             lv_obj_set_width(ai_text, lv_pct(80));
-            lv_obj_align(ai_text, LV_ALIGN_LEFT_MID, 36, 0);
+            lv_obj_align(ai_text, LV_ALIGN_LEFT_MID, UI_X(36), 0);
             lv_obj_add_style(ai_text, &ttf_font_20, LV_PART_MAIN | LV_STATE_DEFAULT);
             lv_label_set_text(ai_text, ai_message_s.text[i]);
             lv_label_set_long_mode(ai_text, LV_LABEL_LONG_WRAP);
             lv_obj_update_layout(ai_text);
 
-            lv_obj_t *ai_img_user = lv_img_create(ai_cont);
-            lv_obj_set_size(ai_img_user, 24, 24);
-            lv_obj_align(ai_img_user, LV_ALIGN_LEFT_MID, 6, 0);
+            lv_obj_t *ai_img_user = ui_image_create(ai_cont);
+            lv_obj_set_size(ai_img_user, UI_X(24), UI_X(24));
+            lv_obj_align(ai_img_user, LV_ALIGN_LEFT_MID, UI_X(6), 0);
             show_image(ai_img_user, "user.png");
 
             // 设置AI消息位置（左侧）
             // lv_coord_t x_pos = lv_obj_get_width(chat_scroll_s) - lv_obj_get_width(ai_cont) - 20;
-            lv_obj_set_pos(ai_cont, 10, current_y);
-            current_y += lv_obj_get_height(ai_cont) + 10;
+            lv_obj_set_pos(ai_cont, UI_X(10), current_y);
+            current_y += lv_obj_get_height(ai_cont) + UI_Y(10);
         }
     }
 
     lv_obj_t * occ_cont = lv_obj_create(chat_scroll_s);
     lv_obj_remove_style_all(occ_cont);
-    lv_obj_set_size(occ_cont, LV_PCT(100), 40);
+    lv_obj_set_size(occ_cont, LV_PCT(100), UI_Y(40));
     lv_obj_set_pos(occ_cont, 0, current_y);
     lv_obj_set_style_radius(occ_cont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(occ_cont, lv_color_hex(0x95EC69), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_opa(occ_cont, LV_OPA_TRANSP, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_all(occ_cont, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(occ_cont, UI_X(10), LV_PART_MAIN | LV_STATE_DEFAULT);
 
     // 设置滚动区域高度
     // lv_obj_set_height(chat_scroll_s, current_y + 20);
@@ -735,7 +737,7 @@ void create_chat_screen(lv_ui_t* ui)
 
     // 创建顶部标题栏
     lv_obj_t* header = lv_obj_create(page_ai_talk_s);
-    lv_obj_set_size(header, LV_PCT(100), 60);
+    lv_obj_set_size(header, LV_PCT(100), UI_Y(60));
     lv_obj_set_style_radius(header,0,LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(header, lv_color_hex(0), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(header, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -745,8 +747,8 @@ void create_chat_screen(lv_ui_t* ui)
 
     // 返回按钮
     lv_obj_t* back_btn = lv_btn_create(header);
-    lv_obj_set_size(back_btn, 100, 52);
-    lv_obj_set_pos(back_btn, 4, 4);
+    lv_obj_set_size(back_btn, UI_X(100), UI_Y(52));
+    lv_obj_set_pos(back_btn, UI_X(4), UI_Y(4));
     lv_obj_set_style_pad_all(back_btn, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(back_btn, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(back_btn, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -769,15 +771,15 @@ void create_chat_screen(lv_ui_t* ui)
     lv_label_set_text(title, str_language_ai_dialogue[get_curr_language()]);
     lv_obj_add_style(title, &ttf_font_30, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_center(title);
-    lv_obj_set_width(title, 200);
+    lv_obj_set_width(title, UI_X(200));
     lv_label_set_long_mode(title, LV_LABEL_LONG_SCROLL);
     lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);
 
-    create_wifi_img(header, -190, 18);
+    create_wifi_img(header, UI_X(-190), UI_Y(18));
     // 菜单按钮
     voice_man = lv_imagebutton_create(header);
-    lv_obj_align(voice_man, LV_ALIGN_RIGHT_MID, -128, 0);
-    lv_obj_set_size(voice_man, 48, 48);
+    lv_obj_align(voice_man, LV_ALIGN_RIGHT_MID, UI_X(-128), 0);
+    lv_obj_set_size(voice_man, UI_X(48), UI_X(48));
     set_voice_style_icon(voice_man);
     if (get_currindex()) {
         show_image(voice_man, "女声.png");
@@ -793,8 +795,8 @@ void create_chat_screen(lv_ui_t* ui)
 
     // 音色选择按钮（右侧）
     lv_obj_t* voice_style_btn = lv_btn_create(header);
-    lv_obj_set_size(voice_style_btn, 100, 52);
-    lv_obj_set_pos(voice_style_btn, H_RES - 104, 4); // 右侧位置
+    lv_obj_set_size(voice_style_btn, UI_X(100), UI_Y(52));
+    lv_obj_set_pos(voice_style_btn, H_RES - UI_X(104), UI_Y(4)); // 右侧位置
     lv_obj_set_style_pad_all(voice_style_btn, 0, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_color(voice_style_btn, lv_color_hex(0x171717), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_radius(voice_style_btn, 20, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -810,18 +812,18 @@ void create_chat_screen(lv_ui_t* ui)
 
     // 创建聊天内容容器
     chat_scroll_s = lv_obj_create(page_ai_talk_s);
-    lv_obj_set_size(chat_scroll_s, LV_PCT(100), V_RES - 60); // 留出标题和输入区域空间
-    lv_obj_align(chat_scroll_s, LV_ALIGN_TOP_MID, 0, 60);
+    lv_obj_set_size(chat_scroll_s, LV_PCT(100), V_RES - UI_Y(120));
+    lv_obj_align(chat_scroll_s, LV_ALIGN_TOP_MID, 0, UI_Y(60));
     lv_obj_set_scrollbar_mode(chat_scroll_s, LV_SCROLLBAR_MODE_ON);
     lv_obj_set_style_bg_color(chat_scroll_s, lv_color_hex(0), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_style_border_width(chat_scroll_s, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_all(chat_scroll_s, 10, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_pad_all(chat_scroll_s, UI_X(10), LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_scrollbar_mode(chat_scroll_s, LV_SCROLLBAR_MODE_AUTO);
 
 
     // 在上方添加一条分割线
     lv_obj_t *up_line                       = lv_line_create(page_ai_talk_s);
-    static lv_point_precise_t points_line[] = {{10, 60}, {640, 60}};
+    static lv_point_precise_t points_line[] = {{UI_X(10), UI_Y(60)}, {UI_X(640), UI_Y(60)}};
     lv_line_set_points(up_line, points_line, 2);
     lv_obj_set_style_line_width(up_line, 2, 0);
     lv_obj_set_style_line_color(up_line, lv_color_hex(0xFFFFFF), 0);
@@ -829,7 +831,7 @@ void create_chat_screen(lv_ui_t* ui)
 
     // 创建语音按钮
     voice_btn = lv_btn_create(page_ai_talk_s);
-    lv_obj_set_size(voice_btn, LV_PCT(80), 60);
+    lv_obj_set_size(voice_btn, LV_PCT(80), UI_Y(60));
     lv_obj_align(voice_btn, LV_ALIGN_BOTTOM_MID, 0, 0);
     // 设置默认样式 - 黑白主题
     lv_obj_set_style_bg_color(voice_btn, lv_color_hex(0x2A2A2A), LV_PART_MAIN | LV_STATE_DEFAULT);

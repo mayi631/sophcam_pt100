@@ -864,6 +864,54 @@ const char *str_language_please_try_again[NUM_LANGUAGES] = {
     "Tente novamente", // Portugues
 };
 
+const char *str_language_photo_settings[NUM_LANGUAGES] = {
+    "拍照设置",
+    "拍照設定",
+    "写真設定",
+    "Photo settings",
+    "Ustawienia zdjęć",
+    "Foto-instellingen",
+    "Fotoeinstellungen",
+    "Réglages photo",
+    "Ajustes de foto",
+    "Impostazioni foto",
+    "Fotoğraf ayarları",
+    "Настройки фото",
+    "Ajustes de foto",
+};
+
+const char *str_language_video_settings[NUM_LANGUAGES] = {
+    "录像设置",
+    "錄影設定",
+    "動画設定",
+    "Video settings",
+    "Ustawienia wideo",
+    "Video-instellingen",
+    "Videoeinstellungen",
+    "Réglages vidéo",
+    "Ajustes de vídeo",
+    "Impostazioni video",
+    "Video ayarları",
+    "Настройки видео",
+    "Ajustes de vídeo",
+};
+
+const char *str_language_system_settings[NUM_LANGUAGES] = {
+    "系统设置",
+    "系統設定",
+    "システム設定",
+    "System settings",
+    "Ustawienia systemu",
+    "Systeeminstellingen",
+    "Systemeinstellungen",
+    "Réglages système",
+    "Ajustes del sistema",
+    "Impostazioni sistema",
+    "Sistem ayarları",
+    "Настройки системы",
+    "Ajustes do sistema",
+};
+
 const char *str_language_ai_camera[NUM_LANGUAGES] = {
     "AI相机",     // 简体中文
     "AI相機",     // 繁体中文
