@@ -122,7 +122,7 @@ clean:
 clean_all:
 	$(call print_target)
 ifeq ($(CONFIG_OSS_FFMPEG),y)
-	$(Q)cd $(CURDIR)/ffmpeg && make clean && cd -
+	$(Q)if [ -f "$(CURDIR)/ffmpeg/ffbuild/config.mak" ]; then $(MAKE) -C "$(CURDIR)/ffmpeg" clean; fi
 	$(Q)rm -rf $(CURDIR)/ffmpeg/build
 	$(Q)rm -rf $(CURDIR)/ffmpeg/include
 	$(Q)rm -rf $(CURDIR)/ffmpeg/lib

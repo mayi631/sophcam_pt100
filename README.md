@@ -90,6 +90,8 @@ install/soc_cv1842cp_sm3_81_spinand/
 
 ### **编译相机应用**
 
+PT100 的 `awtkcode`、`thttpd`、`ffmpeg` 和 `lvgl` 由应用仓库直接提供编译输入，对应原厂版本见 `git_version.txt` 的同名记录。无需另拉 OSS 仓库或复制 `build.stamp`。使用 SDK 的 `arm-none-linux-musleabihf-` 工具链和 `scons`，选择 `cv1842cp_pt100_defconfig` 后正常构建。
+
 1. 配置交叉编译器路径到环境
 2. 使用 make xxx_defconfig 选择应用配置
 3. make -j 编译应用

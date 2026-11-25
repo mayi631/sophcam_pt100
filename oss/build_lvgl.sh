@@ -65,7 +65,7 @@ cmake -B "$build_dir" \
   -DCMAKE_INSTALL_PREFIX="${INSTALL_DIR}" \
   -S ${LVGL_PATH}
 
-cmake --build "$build_dir" -j
+cmake --build "$build_dir" --parallel "${NPROC:-$(nproc)}"
 echo "Build completed. Output dir: $build_dir"
 
 cmake --install "$build_dir"
