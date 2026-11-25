@@ -92,6 +92,8 @@ install/soc_cv1842cp_sm3_81_spinand/
 
 PT100 的 `awtkcode`、`thttpd`、`ffmpeg` 和 `lvgl` 由应用仓库直接提供编译输入，对应原厂版本见 `git_version.txt` 的同名记录。无需另拉 OSS 仓库或复制 `build.stamp`。使用 SDK 的 `arm-none-linux-musleabihf-` 工具链和 `scons`，选择 `cv1842cp_pt100_defconfig` 后正常构建。
 
+HAL、MAPI 从源码构建；其余 PT100 用到的原厂应用组件随仓库提供 ARM 头文件和库。仍需先按板级流程编译配套 SDK（含 MPI、TDL 和 TPU），应用配置默认从上一级 SDK 目录取这些产物。
+
 1. 配置交叉编译器路径到环境
 2. 使用 make xxx_defconfig 选择应用配置
 3. make -j 编译应用

@@ -39,7 +39,7 @@ $(TOPTARGETS): $(SUBDIRS)
 
 ifeq ($(subst ",,$(CONFIG_CVI_BUILD_DIRNAME)),cv1842cp_pt100_spinand)
 ifeq ($(filter clean clean_all install,$(MAKECMDGOALS)),)
-mapi: pt100_mapi_prepare
+mapi: pt100_mapi_prepare hal
 hal: pt100_usb_wifi_prepare
 
 .PHONY: pt100_usb_wifi_prepare

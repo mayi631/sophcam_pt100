@@ -53,6 +53,9 @@ all: $(TOP_CONFIG_FILE) copy_mpi_to_components copy_tdl_to_components $(TOPSUBDI
 	$(call print_target)
 
 components: oss
+ifeq ($(filter clean clean_all distclean install,$(MAKECMDGOALS)),)
+components: copy_mpi_to_components copy_tdl_to_components
+endif
 app_services: components
 applications: app_services
 
