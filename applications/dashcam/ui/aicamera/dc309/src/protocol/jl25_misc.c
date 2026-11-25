@@ -86,8 +86,13 @@ void jl25_misc_handle(const char* query, int fd)
             "\"ModelName\":\"DC309\","
             "\"ChipID\":\"CV1842CP\","
             "\"ProtocolVer\":%d,"
-            "\"WifiChip\":\"RTL8189FS\"}",
-            JL25_PROTOCOL_VER);
+            "\"WifiChip\":\"%s\"}",
+            JL25_PROTOCOL_VER,
+#ifdef WIFI_RTL8188
+            "RTL8188FU");
+#else
+            "RTL8189FS");
+#endif
         (void)WifiParam;
         jl25_http_send_json(fd, resp);
     } else {

@@ -128,7 +128,7 @@ static void hotspot_back_event_handler(lv_event_t* e)
 }
 
 /* 直接在 UI 层打开/关闭热点（AP 模式），不经过消息状态机。
- * 说明：WiFi 驱动(8189fs.ko)已由 wifi-daemon 加载，不能再走 WIFIMNG_Start
+ * 说明：WiFi 驱动已由系统加载，不能再走 WIFIMNG_Start
  * (其内部会 insmod 重新加载驱动而失败)。因此直接调用 WIFI_AP_Start/Stop
  * 配置并启动 hostapd，利用已加载的驱动建立热点。
  */
@@ -146,7 +146,10 @@ static int hotspot_set_enabled(int enable)
 
     if (enable) {
         /* 1. 先关闭 wifi-daemon 的 station 连接，释放 wlan0 */
-        if (wifi_manager_get_status() == 1) {
+        if (access("/usr/sbin/pt100-mode", X_OK) == 0) {
+            if (access("/sys/class/net/wlan0", F_OK) != 0 || wifi_manager_get_status() != 1)
+                return -1;
+        } else if (wifi_manager_get_status() == 1) {
             wifi_manager_set_enabled(0);
         }
 

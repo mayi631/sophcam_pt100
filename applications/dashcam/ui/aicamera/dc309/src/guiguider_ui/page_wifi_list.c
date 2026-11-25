@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define RES_ICON_PATH "/mnt/data/bin/res"
 // #endregion
@@ -551,7 +552,7 @@ static void start_wifi_scan_with_notice(page_wifi_list_data_t* data, uint8_t sho
         // if (show_notice) {
         //     top_notice_show_for(str_language_wifi_scan_failed[get_curr_language()], TOP_NOTICE_TYPE_ERROR, 2000);
         // }
-        lv_obj_send_event(data->refresh_btn, LV_EVENT_CLICKED, NULL);
+        data->scan_timer = lv_timer_create(scan_timer_cb, 1000, data);
         return;
     }
 
@@ -665,6 +666,11 @@ static void scan_timer_cb(lv_timer_t* timer)
     }
 
     /* 获取扫描结果 */
+    if (data->pending_scan_id < 0) {
+        if (access("/sys/class/net/wlan0", F_OK) == 0)
+            data->pending_scan_id = wifi_manager_start_scan();
+        return;
+    }
     count = wifi_manager_get_scan_results(data->scan_results, WIFI_LIST_MAX_AP_COUNT, data->pending_scan_id);
     if (count < 0) {
         /* 还在扫描中，继续等待 */

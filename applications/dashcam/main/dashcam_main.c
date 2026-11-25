@@ -142,7 +142,7 @@ int32_t ModuleDelayedStart()
 	PARAM_WIFI_S WifiParam;
 	s32Ret = PARAM_GetWifiParam(&WifiParam);
 
-	if (true == WifiParam.Enable) {
+	if (true == WifiParam.Enable && access("/usr/sbin/pt100-mode", X_OK) != 0) {
 		s32Ret |= WIFIMNG_Start(WifiParam.WifiCfg, WifiParam.WifiDefaultSsid);
 	}
 	APPCOMM_CHECK_EXPR_WITHOUT_RETURN(s32Ret, "Wifi Init");

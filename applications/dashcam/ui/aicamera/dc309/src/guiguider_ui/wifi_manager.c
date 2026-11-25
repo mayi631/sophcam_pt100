@@ -170,6 +170,9 @@ int wifi_manager_get_status(void)
     char resp[128];
     int status;
 
+    if (access("/usr/sbin/pt100-mode", X_OK) == 0)
+        return access("/mnt/data/pt100-wifi-enabled", F_OK) == 0;
+
     if (send_cmd("GET_STATUS\n", resp, sizeof(resp)) != 0) {
         MLOG_ERR("GET_STATUS failed");
         return -1;
@@ -232,11 +235,13 @@ void wifi_manager_poll(void)
         signal_dbm = atoi(token);
     }
 
-    if (!enabled) {
+    if (!enabled || access("/usr/sbin/pt100-mode", X_OK) == 0) {
         no_connect_since_ms = 0;
         next_auto_off_retry_ms = 0;
-        connected = 0;
-        signal_dbm = -1;
+        if (!enabled) {
+            connected = 0;
+            signal_dbm = -1;
+        }
     } else if (connected) {
         no_connect_since_ms = 0;
         next_auto_off_retry_ms = 0;
@@ -268,6 +273,9 @@ int wifi_manager_set_enabled(int enabled)
 {
     char resp[128];
     char cmd[32];
+
+    if (access("/usr/sbin/pt100-mode", X_OK) == 0)
+        return system(enabled ? "/usr/sbin/pt100-mode wifi-on" : "/usr/sbin/pt100-mode wifi-off") == 0 ? 0 : -1;
 
     snprintf(cmd, sizeof(cmd), "SET_ENABLED\t%d\n", enabled ? 1 : 0);
     MLOG_INFO("set wifi enabled: %d", enabled);

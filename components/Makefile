@@ -40,6 +40,13 @@ $(TOPTARGETS): $(SUBDIRS)
 ifeq ($(subst ",,$(CONFIG_CVI_BUILD_DIRNAME)),cv1842cp_pt100_spinand)
 ifeq ($(filter clean clean_all install,$(MAKECMDGOALS)),)
 mapi: pt100_mapi_prepare
+hal: pt100_usb_wifi_prepare
+
+.PHONY: pt100_usb_wifi_prepare
+pt100_usb_wifi_prepare:
+	@if ! patch -d hal -p1 --reverse --force --dry-run --silent < patches/pt100-usb-wifi.patch >/dev/null 2>&1; then \
+		patch -d hal -p1 --forward --batch < patches/pt100-usb-wifi.patch; \
+	fi
 
 .PHONY: pt100_mapi_prepare
 pt100_mapi_prepare:

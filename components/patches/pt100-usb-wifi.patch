@@ -1,0 +1,44 @@
+--- a/src/wifi/common/hal_wifi_ap.c
++++ b/src/wifi/common/hal_wifi_ap.c
+@@ -161,7 +161,7 @@
+ 
+     /* 关键：先卸载再重新加载驱动，使驱动从干净的 AP 状态启动。
+      * 若驱动被 STA(wpa_supplicant) 使用过后不重载，AP beacon 不会广播 */
+-    {
++    if (access("/sys/module/8189fs", F_OK) == 0) {
+         char szCmd[192] = { '\0' };
+         snprintf(szCmd, sizeof(szCmd), "%s %s", "rmmod", "8189fs");
+         (void)system(szCmd);
+--- a/src/wifi/rtl8188fu/wifi_hal.c
++++ b/src/wifi/rtl8188fu/wifi_hal.c
+@@ -26,9 +26,11 @@
+ void WIFI_HAL_SysPreInit(void)
+ {
+     static bool bPinOutInit = false;
++    if (access("/etc/pt100-usb-role", F_OK) == 0)
++        return;
+     OSAL_FS_System("echo host > /proc/cviusb/otg_role");
+     HAL_GPIO_Set_Value(HAL_GPIOE_18, HAL_GPIO_VALUE_L);
+-    cvi_usleep(10 * 1000);
++    usleep(10 * 1000);
+     HAL_GPIO_Set_Value(HAL_GPIOE_18, HAL_GPIO_VALUE_H);
+     if (true == bPinOutInit) {
+         printf("hal_system_preinit already init\n");
+@@ -42,6 +44,8 @@
+ {
+     int32_t s32Ret = 0;
+ 
++    if (access("/etc/pt100-usb-role", F_OK) == 0)
++        return access("/sys/class/net/wlan0", F_OK);
+     s32Ret = OSAL_FS_Insmod(KOMOD_PATH "/3rd/8188fu.ko", NULL);
+     if (0 != s32Ret) {
+         printf("insmod ap: failed, errno(%d)\n", errno);
+@@ -62,6 +66,8 @@
+ {
+     int32_t s32Ret = 0;
+ 
++    if (access("/etc/pt100-usb-role", F_OK) == 0)
++        return 0;
+     s32Ret = OSAL_FS_Rmmod(KOMOD_PATH "/3rd/8188fu.ko");
+     if (0 != s32Ret) {
+         printf("insmod ap: failed, errno(%d)\n", errno);

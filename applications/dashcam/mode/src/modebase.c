@@ -227,8 +227,10 @@ static int32_t MODEMNG_OpenBaseMode(void)
 {
 	int32_t s32Ret = 0;
 
-	s32Ret = USBCTRL_Init();
-	MODEMNG_CHECK_RET(s32Ret, MODE_EINVAL, "usbctrl init");
+	if (access("/etc/pt100-usb-role", F_OK) != 0) {
+		s32Ret = USBCTRL_Init();
+		MODEMNG_CHECK_RET(s32Ret, MODE_EINVAL, "usbctrl init");
+	}
 
 	/** init timedtask */
 	s32Ret = TIMEDTASK_Init();
