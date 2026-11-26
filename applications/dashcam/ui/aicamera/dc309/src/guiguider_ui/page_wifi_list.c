@@ -72,6 +72,11 @@ static void wifi_list_key_handler(int key_code, int key_value);
 #define WIFI_CONNECT_MAX_POLLS 40
 #define WIFI_CONNECT_TIMEOUT_MS (WIFI_CONNECT_POLL_MS * WIFI_CONNECT_MAX_POLLS)
 #define WIFI_SWITCH_APPLY_DELAY_MS 20
+#define WIFI_SCAN_POLL_MS 250
+#define WIFI_SCAN_WAITING (-1)
+#define WIFI_SCAN_DISPLAYED (-2)
+#define WIFI_SCAN_CACHE_FIRST (-3)
+#define WIFI_SCAN_CACHE_GRACE_MS 1500
 
 // #endregion
 // #############################################################################
@@ -530,7 +535,13 @@ static void rebuild_wifi_list(page_wifi_list_data_t* data)
 /* 开始 WiFi 扫描 */
 static void start_wifi_scan(page_wifi_list_data_t* data)
 {
-    start_wifi_scan_with_notice(data, 1);
+    if (data->scan_timer != NULL) {
+        lv_timer_del(data->scan_timer);
+    }
+    data->pending_scan_id = WIFI_SCAN_CACHE_FIRST;
+    data->scan_cache_since = 0;
+    data->scan_timer = lv_timer_create(scan_timer_cb, WIFI_SCAN_POLL_MS, data);
+    if (data->scan_timer != NULL) lv_timer_ready(data->scan_timer);
 }
 
 static void start_wifi_scan_with_notice(page_wifi_list_data_t* data, uint8_t show_notice)
@@ -547,21 +558,13 @@ static void start_wifi_scan_with_notice(page_wifi_list_data_t* data, uint8_t sho
     }
 
     /* 启动扫描 */
-    data->pending_scan_id = wifi_manager_start_scan();
-    if (data->pending_scan_id < 0) {
-        // if (show_notice) {
-        //     top_notice_show_for(str_language_wifi_scan_failed[get_curr_language()], TOP_NOTICE_TYPE_ERROR, 2000);
-        // }
-        data->scan_timer = lv_timer_create(scan_timer_cb, 1000, data);
-        return;
-    }
+    data->pending_scan_id = access("/sys/class/net/wlan0", F_OK) == 0 ? wifi_manager_start_scan() : WIFI_SCAN_WAITING;
 
-    if (show_notice) {
+    if (show_notice && data->pending_scan_id >= 0) {
         top_notice_show_for(str_language_wifi_scan_started[get_curr_language()], TOP_NOTICE_TYPE_INFO, 5000);
     }
 
-    /* 创建 1 秒定时器轮询结果 */
-    data->scan_timer = lv_timer_create(scan_timer_cb, 1000, data);
+    data->scan_timer = lv_timer_create(scan_timer_cb, WIFI_SCAN_POLL_MS, data);
 }
 
 static void switch_apply_timer_cb(lv_timer_t* timer)
@@ -666,21 +669,41 @@ static void scan_timer_cb(lv_timer_t* timer)
     }
 
     /* 获取扫描结果 */
-    if (data->pending_scan_id < 0) {
-        if (access("/sys/class/net/wlan0", F_OK) == 0)
-            data->pending_scan_id = wifi_manager_start_scan();
+    if (access("/sys/class/net/wlan0", F_OK) != 0) {
+        if (data->scan_count > 0) {
+            data->scan_count = 0;
+            rebuild_wifi_list(data);
+        }
+        data->pending_scan_id = WIFI_SCAN_CACHE_FIRST;
+        data->scan_cache_since = 0;
         return;
     }
-    count = wifi_manager_get_scan_results(data->scan_results, WIFI_LIST_MAX_AP_COUNT, data->pending_scan_id);
-    if (count < 0) {
-        /* 还在扫描中，继续等待 */
+    if (data->pending_scan_id == WIFI_SCAN_DISPLAYED) {
         return;
+    }
+    if (!wifi_manager_socket_exists()) {
+        return;
+    }
+    if (data->pending_scan_id == WIFI_SCAN_CACHE_FIRST) {
+        if (!data->scan_cache_since) data->scan_cache_since = lv_tick_get();
+        count = wifi_manager_get_scan_results(data->scan_results, WIFI_LIST_MAX_AP_COUNT, 0);
+        if (count <= 0) {
+            if (lv_tick_elaps(data->scan_cache_since) >= WIFI_SCAN_CACHE_GRACE_MS)
+                data->pending_scan_id = WIFI_SCAN_WAITING;
+            return;
+        }
+        MLOG_INFO("[WIFI_SCAN] first list from cache: %d APs", count);
+    } else if (data->pending_scan_id < 0) {
+        data->pending_scan_id = wifi_manager_start_scan();
+        return;
+    } else {
+        count = wifi_manager_get_scan_results(data->scan_results, WIFI_LIST_MAX_AP_COUNT, data->pending_scan_id);
+        if (count < 0) return;
     }
 
     /* 扫描完成 */
     data->scan_count = count;
-    lv_timer_del(timer);
-    data->scan_timer = NULL;
+    data->pending_scan_id = WIFI_SCAN_DISPLAYED;
 
     /* 重建列表 */
     /* 重要：清除悬空指针，避免访问已删除的LVGL对象导致崩溃 */
@@ -804,7 +827,7 @@ static void refresh_btn_click_cb(lv_event_t* e)
         return;
     }
 
-    start_wifi_scan(data);
+    start_wifi_scan_with_notice(data, 1);
 }
 
 static void wifi_switch_change_cb(lv_event_t* e)
@@ -969,8 +992,14 @@ static void wifi_list_key_handler(int key_code, int key_value)
         }
 
         case KEY_OK: {
-            if (data != NULL) {
+            if (data == NULL || data->switch_apply_pending) {
+                break;
+            }
+            if (data->wifi_enabled) {
                 wifi_list_confirm_selection(data);
+            } else if (lv_obj_is_valid(data->wifi_switch)) {
+                set_wifi_switch_checked(data, 1);
+                lv_obj_send_event(data->wifi_switch, LV_EVENT_VALUE_CHANGED, NULL);
             }
             break;
         }

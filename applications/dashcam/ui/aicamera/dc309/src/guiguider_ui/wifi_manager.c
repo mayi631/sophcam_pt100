@@ -292,6 +292,11 @@ int wifi_manager_set_enabled(int enabled)
     return -1;
 }
 
+int wifi_manager_socket_exists(void)
+{
+    return access(WIFI_DAEMON_SOCKET, F_OK) == 0;
+}
+
 int wifi_manager_start_scan(void)
 {
     char resp[128];

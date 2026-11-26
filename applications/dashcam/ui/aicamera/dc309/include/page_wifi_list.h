@@ -32,6 +32,7 @@ typedef struct {
     uint8_t switch_target_enabled;
     uint8_t switch_ignore_event;
     int pending_scan_id;
+    uint32_t scan_cache_since;
     int connect_poll_count;
     int scan_count;
     char pending_ssid[WIFI_MANAGER_MAX_SSID_LEN];
