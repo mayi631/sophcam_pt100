@@ -3,7 +3,9 @@
 ## 范围
 
 以 taixin `script/print_sim.lua` 和 `script/motor.lua` 实际使用的马达能力为参考，
-本轮只实现底层马达 API，不实现模拟打印/真实打印流程，不绑定 UI、图像发送、pass 调度或纸张传感器。
+本模块只实现底层马达 API，不绑定 UI、图像发送、pass 调度或纸张传感器。
+上层模拟打印流程现由 `printmng.h` 提供，拍立得业务应使用打印管理接口，
+而不是自行拼接马达启停；参见 `docs/pt100_print_api.md`。真实打印头仍需接入后端。
 
 公共头：`applications/manager/include/motormng.h`。
 实现：`applications/manager/src/motor/motormng.c`、`motor_hw.c`。
